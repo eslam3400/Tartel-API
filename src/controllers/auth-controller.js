@@ -6,23 +6,23 @@ const db = require('../data');
 dotenv.config();
 
 const generateToken = (user) => {
-  return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {
-    expiresIn: '1h',
-  });
+  return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {});
 };
 
 const registerUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { phone, firebaseId } = req.body;
 
-    const existingUser = await db.User.findOne({ where: { username } });
+    if (!phone || !firebaseId) return res.status(400).json({ msg: 'Invalid phone or firebaseId' });
+
+    const existingUser = await db.User.findOne({ where: { phone } });
     if (existingUser) {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
     const newUser = await db.User.create({
-      username,
-      password,
+      phone,
+      firebaseId,
     });
 
     const token = generateToken(newUser);
@@ -34,15 +34,12 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { phone, firebaseId } = req.body;
 
-    const user = await db.User.findOne({ where: { username } });
+    if (!phone || !firebaseId) return res.status({ msg: 'Invalid phone or firebaseId' });
+
+    const user = await db.User.findOne({ where: { phone, firebaseId } });
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
