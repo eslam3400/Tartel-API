@@ -88,10 +88,18 @@ app.get("/api/translations", async (req, res) => {
 app.get("/api/chapters", async (req, res) => {
   try {
     const { language } = req.params
-    const response = await axios.get(`https://api.quran.com/api/v4/chapters?language=${language ?? "ar"}`)
-    const chapters = []
-    for (const item of response.data.chapters) {
-      chapters.push({
+    const [chapterResponse, quran] = await Promise.all([
+      axios.get(`https://api.quran.com/api/v4/chapters?language=${language ?? "ar"}`),
+      readFileAsync('quran.json', 'utf8')
+    ])
+    const quranData = JSON.parse(quran);
+    const data = {
+      surahs: [],
+      juzs: [],
+      hizbs: []
+    }
+    for (const item of chapterResponse.data.chapters) {
+      data.surahs.push({
         name_arabic: item.name_arabic,
         name_translate: item.translated_name.name,
         place: item.revelation_place,
@@ -100,7 +108,18 @@ app.get("/api/chapters", async (req, res) => {
         end_page: item.pages[item.pages.length - 1]
       });
     }
-    res.json({ chapters });
+    for (const item of quranData) {
+      const existingItem = data.juzs.find(x => x.number == item.chapter)
+      if (existingItem) continue;
+      data.juzs.push({ number: item.chapter, ayah: item.ayah_text, surah: item.surrahname, start: item.ayah });
+    }
+    for (const item of quranData) {
+      const existingItem = data.hizbs.find(x => x.number == item.hizb)
+      if (existingItem || item.hizb % 1 != .25) continue;
+      data.hizbs.push({ number: item.hizb, ayah: item.ayah_text, surah: item.surrahname, start: item.ayah });
+    }
+    data.hizbs.forEach((item, index) => item.number = index + 1)
+    res.json(data);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
