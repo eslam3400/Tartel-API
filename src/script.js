@@ -19,7 +19,13 @@ pool.query(`SELECT * FROM ${tableName}`, (error, result) => {
     return;
   }
 
-  const data = result.rows.filter(x => x.ayah != 0);
+  const data = result.rows.filter(x => x.ayah != 0).sort((a, b) => {
+    if (a.surah !== b.surah) {
+      return a.surah - b.surah;
+    } else {
+      return a.ayah - b.ayah;
+    }
+  });
   const jsonData = JSON.stringify(data, null, 2);
 
   // Save the JSON data to a file
