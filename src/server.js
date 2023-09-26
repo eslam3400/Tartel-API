@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-
+const fs = require('fs');
+const util = require('util');
 // const db = require('./data');
 const authRoutes = require('./routes/auth.routes');
 const statisticsRoutes = require('./routes/statistics.routes');
 const tasksRoutes = require('./routes/tasks.routes');
+const readFileAsync = util.promisify(fs.readFile);
 
 const app = express();
 
@@ -20,10 +22,12 @@ app.get("/api/ayat", async (req, res) => {
     const { translation, type } = req.query;
     const data = []
     const typeName = type == null || type == 1 ? "uthmani" : "indopak";
-    const [response, translationResponse] = await Promise.all([
+    const [response, translationResponse, quran] = await Promise.all([
       axios.get(`https://api.quran.com/api/v4/quran/verses/${typeName}`),
-      axios.get(`https://api.quran.com/api/v4/quran/translations/${translation ?? 131}`)
+      axios.get(`https://api.quran.com/api/v4/quran/translations/${translation ?? 131}`),
+      readFileAsync('quran.json', 'utf8')
     ]);
+    const quranData = JSON.parse(quran);
     const { translations } = translationResponse.data
     for (let i = 0; i < response.data.verses.length; i++) {
       const item = response.data.verses[i];
@@ -31,10 +35,26 @@ app.get("/api/ayat", async (req, res) => {
       const ayah = item.verse_key.split(":")[1];
       const existingSurah = data.find(x => x.surah === surah)
       if (existingSurah) {
-        existingSurah.ayat.push({ ayah, arabic: item[`text_${typeName}`], translation: translations[i].text })
+        existingSurah.ayat.push({
+          ayah,
+          arabic: item[`text_${typeName}`],
+          translation: translations[i].text,
+          page: quranData[i].page,
+          hizb: quranData[i].hizb,
+          chapter: quranData[i].chapter
+        })
         continue;
       }
-      data.push({ surah, ayat: [{ ayah, arabic: item[`text_${typeName}`], translation: translations[i].text }] })
+      data.push({
+        surah,
+        ayat: [{
+          ayah, arabic: item[`text_${typeName}`],
+          translation: translations[i].text,
+          page: quranData[i].page,
+          hizb: quranData[i].hizb,
+          chapter: quranData[i].chapter
+        }]
+      })
     }
     res.json(data);
   } catch (error) {
@@ -88,6 +108,8 @@ app.get("/api/chapters", async (req, res) => {
 })
 
 const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`))
 
 // db.sequelize
 //   .sync()
