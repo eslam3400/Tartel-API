@@ -1,9 +1,5 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
 const db = require('../data');
-
-dotenv.config();
 
 const generateToken = (user) => {
   return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {});
