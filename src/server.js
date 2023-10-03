@@ -111,12 +111,24 @@ app.get("/api/chapters", async (req, res) => {
     for (const item of quranData) {
       const existingItem = data.juzs.find(x => x.number == item.chapter)
       if (existingItem) continue;
-      data.juzs.push({ number: item.chapter, ayah: item.ayah_text, surah: item.surrahname, start: item.ayah });
+      data.juzs.push({
+        number: item.chapter,
+        ayah: item.ayah_text,
+        surah: item.surrahname,
+        start: item.ayah,
+        page: item.page
+      });
     }
     for (const item of quranData) {
       const existingItem = data.hizbs.find(x => x.number == item.hizb)
       if (existingItem || item.hizb % 1 != .25) continue;
-      data.hizbs.push({ number: item.hizb, ayah: item.ayah_text, surah: item.surrahname, start: item.ayah });
+      data.hizbs.push({
+        number: item.hizb,
+        ayah: item.ayah_text,
+        surah: item.surrahname,
+        start: item.ayah,
+        page: item.page
+      });
     }
     data.hizbs.forEach((item, index) => item.number = index + 1)
     res.json(data);
