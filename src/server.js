@@ -47,6 +47,7 @@ app.get("/api/ayat", async (req, res) => {
       }
       data.push({
         surah,
+        surah_name: quranData[i].surrahname,
         ayat: [{
           ayah, arabic: item[`text_${typeName}`],
           translation: translations[i].text,
