@@ -116,9 +116,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/ayat",
+					"raw": "{{server}}/ayat",
 					"host": [
-						"{{host}}"
+						"{{server}}"
 					],
 					"path": [
 						"ayat"
@@ -145,9 +145,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/translations",
+					"raw": "{{server}}/translations",
 					"host": [
-						"{{host}}"
+						"{{server}}"
 					],
 					"path": [
 						"translations"
@@ -162,9 +162,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/chapters",
+					"raw": "{{server}}/chapters",
 					"host": [
-						"{{host}}"
+						"{{server}}"
 					],
 					"path": [
 						"chapters"
@@ -196,8 +196,13 @@
 	],
 	"variable": [
 		{
-			"key": "host",
+			"key": "local",
 			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "server",
+			"value": "http://ec2-51-20-96-110.eu-north-1.compute.amazonaws.com/api",
 			"type": "string"
 		}
 	]
