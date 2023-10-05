@@ -38,7 +38,9 @@ app.get("/api/ayat", async (req, res) => {
         existingSurah.ayat.push({
           ayah,
           arabic: item[`text_${typeName}`],
+          arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text,
+          translation_words: translations[i].text.split(" "),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
@@ -49,8 +51,11 @@ app.get("/api/ayat", async (req, res) => {
         surah,
         surah_name: quranData[i].surrahname,
         ayat: [{
-          ayah, arabic: item[`text_${typeName}`],
+          ayah,
+          arabic: item[`text_${typeName}`],
+          arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text,
+          translation_words: translations[i].text.split(" "),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
