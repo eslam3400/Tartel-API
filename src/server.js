@@ -155,7 +155,17 @@ app.get("/api/tafseers", async (req, res) => {
 
 app.get("/api/tafseers/:id", async (req, res) => {
   try {
-    x``
+    const { id } = req.params;
+    const requests = [];
+    for (let i = 1; i <= 114; i++) {
+      requests.push(axios.get(`http://api.quran-tafseer.com/tafseer/${id}/${i}/1/1000`))
+    }
+    const responses = await Promise.all(requests);
+    const data = [];
+    for (const response of responses) {
+      data.push(...response.data.map(x => ({ ...x, sura: x.ayah_url.split('/')[2] })))
+    }
+    res.json({ data })
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
