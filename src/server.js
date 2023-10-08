@@ -40,7 +40,6 @@ app.get("/api/ayat", async (req, res) => {
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text,
-          translation_words: translations[i].text.split(" "),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
@@ -55,14 +54,13 @@ app.get("/api/ayat", async (req, res) => {
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text,
-          translation_words: translations[i].text.split(" "),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
         }]
       })
     }
-    res.json(data);
+    res.json({ data });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
@@ -84,7 +82,7 @@ app.get("/api/translations", async (req, res) => {
         translations: [{ id: translation.id, name: translation.name, author: translation.author_name }]
       })
     }
-    res.json(data);
+    res.json({ data });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
@@ -106,7 +104,7 @@ app.get("/api/chapters", async (req, res) => {
     }
     for (const item of chapterResponse.data.chapters) {
       data.surahs.push({
-        name_arabic: item.name_arabic,
+        name_arabic: quranData.find(x => x.surah == item.id).surrahname,
         name_translate: item.translated_name.name,
         place: item.revelation_place,
         ayat: item.verses_count,
@@ -119,8 +117,8 @@ app.get("/api/chapters", async (req, res) => {
       if (existingItem) continue;
       data.juzs.push({
         number: item.chapter,
-        ayah: item.ayah_text,
-        surah: item.surrahname,
+        ayah: item.ayah_text.split(" ").slice(0, 4).join(" ").replace("۞", ""),
+        surah: item.surrahname_no_diacratic.split(" ")[1],
         start: item.ayah,
         page: item.page
       });
@@ -130,14 +128,34 @@ app.get("/api/chapters", async (req, res) => {
       if (existingItem || item.hizb % 1 != .25) continue;
       data.hizbs.push({
         number: item.hizb,
-        ayah: item.ayah_text,
-        surah: item.surrahname,
+        ayah: item.ayah_text.split(" ").slice(0, 4).join(" ").replace("۞", ""),
+        surah: item.surrahname_no_diacratic.split(" ")[1],
         start: item.ayah,
         page: item.page
       });
     }
     data.hizbs.forEach((item, index) => item.number = index + 1)
-    res.json(data);
+    res.json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get("/api/tafseers", async (req, res) => {
+  try {
+    const response = await axios.get(`http://api.quran-tafseer.com/tafseer/`)
+    const data = response.data
+    res.json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get("/api/tafseers/:id", async (req, res) => {
+  try {
+    x``
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
