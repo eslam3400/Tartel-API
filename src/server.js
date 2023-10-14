@@ -39,7 +39,7 @@ app.get("/api/ayat", async (req, res) => {
           ayah,
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
-          translation: translations[i].text,
+          translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
@@ -53,7 +53,7 @@ app.get("/api/ayat", async (req, res) => {
           ayah,
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
-          translation: translations[i].text,
+          translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
           chapter: quranData[i].chapter
@@ -74,12 +74,22 @@ app.get("/api/translations", async (req, res) => {
     for (const translation of response.data.translations) {
       const existingTranslation = data.find(x => x.language == translation.language_name);
       if (existingTranslation) {
-        existingTranslation.translations.push({ id: translation.id, name: translation.name, author: translation.author_name })
+        existingTranslation.translations.push({
+          id: translation.id,
+          name: translation.name,
+          author: translation.author_name,
+          language: translation.language_name,
+        })
         continue;
       }
       data.push({
         language: translation.language_name,
-        translations: [{ id: translation.id, name: translation.name, author: translation.author_name }]
+        translations: [{
+          id: translation.id,
+          name: translation.name,
+          author: translation.author_name,
+          language: translation.language_name,
+        }]
       })
     }
     res.json({ data });
@@ -104,8 +114,8 @@ app.get("/api/chapters", async (req, res) => {
     }
     for (const item of chapterResponse.data.chapters) {
       data.surahs.push({
-        name_arabic: quranData.find(x => x.surah == item.id).surrahname,
-        name_translate: item.translated_name.name,
+        name_arabic: quranData.find(x => x.surah == item.id).surrahname.split(' ')[1],
+        name_translate: item.translated_name.name.split(' ')[1],
         place: item.revelation_place,
         ayat: item.verses_count,
         start_page: item.pages[0],
@@ -163,7 +173,7 @@ app.get("/api/tafseers/:id", async (req, res) => {
     const responses = await Promise.all(requests);
     const data = [];
     for (const response of responses) {
-      data.push(...response.data.map(x => ({ ...x, sura: x.ayah_url.split('/')[2] })))
+      data.push(...response.data.map(x => ({ ...x, sura: +x.ayah_url.split('/')[2] })))
     }
     res.json({ data })
   } catch (error) {
