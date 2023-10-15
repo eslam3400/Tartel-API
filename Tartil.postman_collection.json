@@ -172,6 +172,88 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Tafseers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/tafseers",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"tafseers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tafseer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/tafseers/:id",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"tafseers",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Telawat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/telawat",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"telawat"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Telawa",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/telawat/:id",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"telawat",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -197,7 +279,7 @@
 	"variable": [
 		{
 			"key": "local",
-			"value": "http://localhost:3000/api",
+			"value": "http://localhost:80/api",
 			"type": "string"
 		},
 		{
