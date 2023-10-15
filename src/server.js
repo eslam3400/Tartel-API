@@ -71,6 +71,7 @@ app.get("/api/translations", async (req, res) => {
   try {
     const data = [];
     const response = await axios.get("https://api.quran.com/api/v4/resources/translations");
+    let counter = 1;
     for (const translation of response.data.translations) {
       const existingTranslation = data.find(x => x.language == translation.language_name);
       if (existingTranslation) {
@@ -83,6 +84,7 @@ app.get("/api/translations", async (req, res) => {
         continue;
       }
       data.push({
+        id: counter++,
         language: translation.language_name,
         translations: [{
           id: translation.id,
