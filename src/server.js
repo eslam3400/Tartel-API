@@ -184,6 +184,29 @@ app.get("/api/tafseers/:id", async (req, res) => {
   }
 })
 
+app.get("/api/telawat", async (req, res) => {
+  try {
+    const response = await axios.get(`https://api.quran.com/api/v4/resources/recitations?language=ar`)
+    const data = response.data.recitations
+    res.json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get("/api/telawat/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+    const response = await axios.get(`https://api.quran.com/api/v4/chapter_recitations/${id}`)
+    const data = response.data.audio_files
+    res.json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+})
+
 const PORT = process.env.PORT || 80;
 
 app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`))
