@@ -60,7 +60,7 @@ app.get("/api/ayat", async (req, res) => {
         }]
       })
     }
-    res.json({ data });
+    res.json({ translation_id: translation ?? 131, data });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
@@ -177,7 +177,7 @@ app.get("/api/tafseers/:id", async (req, res) => {
     for (const response of responses) {
       data.push(...response.data.map(x => ({ ...x, sura: +x.ayah_url.split('/')[2] })))
     }
-    res.json({ data })
+    res.json({ tafseer_id: id, data })
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
