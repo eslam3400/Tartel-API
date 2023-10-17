@@ -19,12 +19,13 @@ app.use('/api/tasks', tasksRoutes);
 
 app.get("/api/ayat", async (req, res) => {
   try {
-    const { translation, type } = req.query;
+    let { translation, type } = req.query;
+    translation = translation ?? 131;
     const data = []
     const typeName = type == null || type == 1 ? "uthmani" : "indopak";
     const [response, translationResponse, quran] = await Promise.all([
       axios.get(`https://api.quran.com/api/v4/quran/verses/${typeName}`),
-      axios.get(`https://api.quran.com/api/v4/quran/translations/${translation ?? 131}`),
+      axios.get(`https://api.quran.com/api/v4/quran/translations/${translation}`),
       readFileAsync('quran.json', 'utf8')
     ]);
     const quranData = JSON.parse(quran);
@@ -49,6 +50,7 @@ app.get("/api/ayat", async (req, res) => {
       data.push({
         surah,
         surah_name: quranData[i].surrahname,
+        translation_id: translation,
         ayat: [{
           ayah,
           arabic: item[`text_${typeName}`],
@@ -60,7 +62,7 @@ app.get("/api/ayat", async (req, res) => {
         }]
       })
     }
-    res.json({ translation_id: translation ?? 131, data });
+    res.json({ translation_id: translation, data });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message })
@@ -172,10 +174,20 @@ app.get("/api/tafseers/:id", async (req, res) => {
     for (let i = 1; i <= 114; i++) {
       requests.push(axios.get(`http://api.quran-tafseer.com/tafseer/${id}/${i}/1/1000`))
     }
+    const quran = await readFileAsync('quran.json', 'utf8');
+    const quranData = JSON.parse(quran);
     const responses = await Promise.all(requests);
     const data = [];
+    let counter = 1;
     for (const response of responses) {
-      data.push(...response.data.map(x => ({ ...x, sura: +x.ayah_url.split('/')[2] })))
+      const ayat = quranData.filter(x => x.surah == counter);
+      counter++;
+      data.push(...response.data.map(x => ({
+        ...x,
+        sura: +x.ayah_url.split('/')[2],
+        sura_name: ayat[0].surrahname_no_diacratic,
+        ayah: ayat.find(y => y.ayah == x.ayah_number).ayah_text
+      })))
     }
     res.json({ tafseer_id: id, data })
   } catch (error) {
