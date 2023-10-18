@@ -23,13 +23,15 @@ app.get("/api/ayat", async (req, res) => {
     translation = translation ?? 131;
     const data = []
     const typeName = type == null || type == 1 ? "uthmani" : "indopak";
-    const [response, translationResponse, quran] = await Promise.all([
+    const [response, translationResponse, quran, translationsResponse] = await Promise.all([
       axios.get(`https://api.quran.com/api/v4/quran/verses/${typeName}`),
       axios.get(`https://api.quran.com/api/v4/quran/translations/${translation}`),
-      readFileAsync('quran.json', 'utf8')
+      readFileAsync('quran.json', 'utf8'),
+      axios.get("https://api.quran.com/api/v4/resources/translations")
     ]);
     const quranData = JSON.parse(quran);
     const { translations } = translationResponse.data
+    const translationsList = translationsResponse.data.translations
     for (let i = 0; i < response.data.verses.length; i++) {
       const item = response.data.verses[i];
       const surah = item.verse_key.split(":")[0];
@@ -37,13 +39,16 @@ app.get("/api/ayat", async (req, res) => {
       const existingSurah = data.find(x => x.surah === surah)
       if (existingSurah) {
         existingSurah.ayat.push({
+          surah,
+          surah_name: quranData[i].surrahname_no_diacratic.split(" ")[1],
           ayah,
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
-          chapter: quranData[i].chapter
+          chapter: quranData[i].chapter,
+          translator: translationsList.find(x => x.id == translation).name
         })
         continue;
       }
@@ -52,13 +57,16 @@ app.get("/api/ayat", async (req, res) => {
         surah_name: quranData[i].surrahname,
         translation_id: translation,
         ayat: [{
+          surah,
+          surah_name: quranData[i].surrahname_no_diacratic.split(" ")[1],
           ayah,
           arabic: item[`text_${typeName}`],
           arabic_words: item[`text_${typeName}`].split(" "),
           translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
           page: quranData[i].page,
           hizb: quranData[i].hizb,
-          chapter: quranData[i].chapter
+          chapter: quranData[i].chapter,
+          translator: translationsList.find(x => x.id == translation).name
         }]
       })
     }
@@ -117,8 +125,15 @@ app.get("/api/chapters", async (req, res) => {
       hizbs: []
     }
     for (const item of chapterResponse.data.chapters) {
+      let name_arabic = quranData.find(x => x.surah == item.id).surrahname.split(' ');
+      let name_no_diacratic = quranData.find(x => x.surah == item.id).surrahname_no_diacratic.split(' ');
+      name_arabic.shift();
+      name_no_diacratic.shift();
+      name_arabic = name_arabic.join(" ");
+      name_no_diacratic = name_no_diacratic.join(" ");
       data.surahs.push({
-        name_arabic: quranData.find(x => x.surah == item.id).surrahname.split(' ')[1],
+        name_arabic,
+        name_no_diacratic,
         name_translate: item.translated_name.name.split(' ')[1],
         place: item.revelation_place,
         ayat: item.verses_count,
@@ -212,6 +227,40 @@ app.get("/api/telawat/:id", async (req, res) => {
     const { id } = req.params
     const response = await axios.get(`https://api.quran.com/api/v4/chapter_recitations/${id}`)
     const data = response.data.audio_files
+    res.json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get("/api/telawat-ayat/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+    const requests = [];
+    for (let i = 1; i <= 114; i++) {
+      requests.push(axios.get(`https://api.quran.com/api/v4/recitations/${id}/by_chapter/${i}?per_page=1000`))
+    }
+    const quran = await readFileAsync('quran.json', 'utf8');
+    const quranData = JSON.parse(quran);
+    const responses = await Promise.all(requests);
+    const data = [];
+    for (const response of responses) {
+      const { audio_files } = response.data;
+      data.push(audio_files.map(x => {
+        const surah = +x.verse_key.split(":")[0];
+        const ayah = +x.verse_key.split(":")[1];
+        const ayahDetails = quranData.find(x => x.ayah == ayah && x.surah == surah);
+        return {
+          url: x.url,
+          surah,
+          ayah,
+          page: ayahDetails.page,
+          chapter: ayahDetails.chapter
+        }
+      }
+      ));
+    }
     res.json({ data });
   } catch (error) {
     console.log(error);
