@@ -220,9 +220,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{local}}/telawat",
+					"raw": "{{server}}/telawat",
 					"host": [
-						"{{local}}"
+						"{{server}}"
 					],
 					"path": [
 						"telawat"
@@ -237,12 +237,36 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{local}}/telawat/:id",
+					"raw": "{{server}}/telawat/:id",
 					"host": [
-						"{{local}}"
+						"{{server}}"
 					],
 					"path": [
 						"telawat",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Telawa Ayat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/telawat-ayat/:id",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"telawat-ayat",
 						":id"
 					],
 					"variable": [
