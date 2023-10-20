@@ -247,7 +247,7 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
     const data = [];
     for (const response of responses) {
       const { audio_files } = response.data;
-      data.push(audio_files.map(x => {
+      data.push(...audio_files.map(x => {
         const surah = +x.verse_key.split(":")[0];
         const ayah = +x.verse_key.split(":")[1];
         const ayahDetails = quranData.find(x => x.ayah == ayah && x.surah == surah);
