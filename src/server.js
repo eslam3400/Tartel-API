@@ -252,11 +252,12 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
         const ayah = +x.verse_key.split(":")[1];
         const ayahDetails = quranData.find(x => x.ayah == ayah && x.surah == surah);
         return {
-          url: x.url,
+          url: `https://verses.quran.com/${x.url}`,
           surah,
           ayah,
           page: ayahDetails.page,
-          chapter: ayahDetails.chapter
+          chapter: ayahDetails.chapter,
+          surah_name: ayahDetails.surrahname_no_diacratic,
         }
       }
       ));
