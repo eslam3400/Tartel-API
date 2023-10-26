@@ -236,18 +236,24 @@ app.get("/api/telawat/:id", async (req, res) => {
 
 app.get("/api/telawat-ayat/:id", async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
+    const { page, surah, juz, from_ayah, to_ayah, from_surah, to_surah } = req.query;
     const requests = [];
-    for (let i = 1; i <= 114; i++) {
-      requests.push(axios.get(`https://api.quran.com/api/v4/recitations/${id}/by_chapter/${i}?per_page=1000`))
+    if (surah) {
+      requests.push(axios.get(`https://api.quran.com/api/v4/recitations/${id}/by_chapter/${surah}?per_page=1000`))
+    } else {
+      for (let i = 1; i <= 114; i++) {
+        requests.push(axios.get(`https://api.quran.com/api/v4/recitations/${id}/by_chapter/${i}?per_page=1000`))
+      }
     }
     const quran = await readFileAsync('quran.json', 'utf8');
     const quranData = JSON.parse(quran);
     const responses = await Promise.all(requests);
     const data = [];
     for (const response of responses) {
+      let filteredData;
       const { audio_files } = response.data;
-      data.push(...audio_files.map(x => {
+      const mapping = x => {
         const surah = +x.verse_key.split(":")[0];
         const ayah = +x.verse_key.split(":")[1];
         const ayahDetails = quranData.find(x => x.ayah == ayah && x.surah == surah);
@@ -260,7 +266,19 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
           surah_name: ayahDetails.surrahname_no_diacratic,
         }
       }
-      ));
+      if (juz) {
+        filteredData = audio_files.map(mapping).filter(x => x.chapter == juz)
+      } else if (page) {
+        filteredData = audio_files.map(mapping).filter(x => x.page == page)
+      } else if (from_ayah && to_ayah && from_surah && to_surah) {
+        filteredData = audio_files
+          .map(mapping)
+          .filter(x => x.surah >= from_surah && x.surah <= to_surah)
+          .slice(from_ayah - 1, to_ayah)
+      } else {
+        filteredData = audio_files.map(mapping)
+      }
+      data.push(...filteredData);
     }
     res.json({ data });
   } catch (error) {
