@@ -249,7 +249,7 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
     const quran = await readFileAsync('quran.json', 'utf8');
     const quranData = JSON.parse(quran);
     const responses = await Promise.all(requests);
-    const data = [];
+    let data = [];
     for (const response of responses) {
       let filteredData;
       const { audio_files } = response.data;
@@ -274,11 +274,19 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
         filteredData = audio_files
           .map(mapping)
           .filter(x => x.surah >= from_surah && x.surah <= to_surah)
-          .slice(from_ayah - 1, to_ayah)
       } else {
         filteredData = audio_files.map(mapping)
       }
       data.push(...filteredData);
+    }
+    if (from_ayah && to_ayah && from_surah && to_surah) {
+      data = data.slice(from_ayah - 1)
+      for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+        if (element.ayah == to_ayah && element.surah == to_surah) {
+          data = data.slice(0, i + 1);
+        }
+      }
     }
     res.json({ data });
   } catch (error) {

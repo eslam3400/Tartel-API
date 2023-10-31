@@ -261,13 +261,46 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/telawat-ayat/:id",
+					"raw": "{{server}}/telawat-ayat/:id?from_ayah=1&to_ayah=7&from_surah=1&to_surah=1",
 					"host": [
 						"{{server}}"
 					],
 					"path": [
 						"telawat-ayat",
 						":id"
+					],
+					"query": [
+						{
+							"key": "from_ayah",
+							"value": "1"
+						},
+						{
+							"key": "to_ayah",
+							"value": "7"
+						},
+						{
+							"key": "from_surah",
+							"value": "1"
+						},
+						{
+							"key": "to_surah",
+							"value": "1"
+						},
+						{
+							"key": "page",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "surah",
+							"value": "15",
+							"disabled": true
+						},
+						{
+							"key": "juz",
+							"value": "12",
+							"disabled": true
+						}
 					],
 					"variable": [
 						{
