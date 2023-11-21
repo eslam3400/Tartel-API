@@ -5,38 +5,19 @@ const generateToken = (user) => {
   return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {});
 };
 
-const registerUser = async (req, res) => {
-  try {
-    const { phone, firebaseId } = req.body;
-
-    if (!phone || !firebaseId) return res.status(400).json({ msg: 'Invalid phone or firebaseId' });
-
-    const existingUser = await db.User.findOne({ where: { phone } });
-    if (existingUser) {
-      return res.status(400).json({ msg: 'User already exists' });
-    }
-
-    const newUser = await db.User.create({
-      phone,
-      firebaseId,
-    });
-
-    const token = generateToken(newUser);
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-
 const loginUser = async (req, res) => {
   try {
     const { phone, firebaseId } = req.body;
 
     if (!phone || !firebaseId) return res.status({ msg: 'Invalid phone or firebaseId' });
 
-    const user = await db.User.findOne({ where: { phone, firebaseId } });
+    let user = await db.User.findOne({ where: { phone, firebaseId } });
+
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+      user = await db.User.create({
+        phone,
+        firebaseId,
+      });
     }
 
     const token = generateToken(user);
@@ -46,4 +27,4 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+module.exports = { loginUser }
