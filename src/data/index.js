@@ -11,6 +11,12 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // For self-signed certificates
+      },
+    },
   }
 );
 
@@ -20,5 +26,15 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.User = require('../models/user')(sequelize, Sequelize);
+db.TaskChapter = require('../models/task-chapter')(sequelize, Sequelize);
+db.GoodDeed = require('../models/good-deed')(sequelize, Sequelize);
+db.Task = require('../models/task')(sequelize, Sequelize);
+
+// relations
+db.GoodDeed.belongsTo(db.User);
+db.User.hasMany(db.GoodDeed);
+db.Task.belongsTo(db.User);
+
+sequelize.sync({ alter: true });
 
 module.exports = db;

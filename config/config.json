@@ -1,0 +1,22 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "Eslam@3400",
+    "database": "tartil",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "staging": {
+    "username": "postgres",
+    "password": "Eslam3400",
+    "database": "tartil",
+    "host": "tartil-db.cd5yvcxbvqtz.eu-north-1.rds.amazonaws.com",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  }
+}

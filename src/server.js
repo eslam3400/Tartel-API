@@ -3,7 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
 const util = require('util');
-// const db = require('./data');
+const db = require('./data');
 const authRoutes = require('./routes/auth.routes');
 const statisticsRoutes = require('./routes/statistics.routes');
 const tasksRoutes = require('./routes/tasks.routes');
@@ -359,13 +359,11 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
 
 const PORT = process.env.PORT || 80;
 
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`))
-
-// db.sequelize
-//   .sync()
-//   .then(() => {
-//     app.listen(PORT, () =>
-//       console.log(`Server is running on http://localhost:${PORT}`)
-//     );
-//   })
-//   .catch((error) => console.error('Unable to connect to the database:', error));
+db.sequelize
+  .sync()
+  .then(() => {
+    app.listen(PORT, () =>
+      console.log(`Server is running on http://localhost:${PORT}`)
+    );
+  })
+  .catch((error) => console.error('Unable to connect to the database:', error));

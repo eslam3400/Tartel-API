@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const GoodDeeds = sequelize.define('good-deeds', {
+  const GoodDeed = sequelize.define('good-deed', {
     score: {
       type: Sequelize.BIGINT,
       allowNull: false,
@@ -10,7 +10,5 @@ module.exports = (sequelize, Sequelize) => {
     },
   });
 
-  GoodDeeds.belongsTo(db.User, { foreignKey: 'userId' });
-
-  return GoodDeeds;
+  return GoodDeed;
 };
