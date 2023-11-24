@@ -5,7 +5,7 @@ const generateToken = (user) => {
   return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {});
 };
 
-const loginUser = async (req, res) => {
+const auth = async (req, res) => {
   try {
     const { phone, firebaseId } = req.body;
 
@@ -27,4 +27,4 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser }
+module.exports = { auth }
