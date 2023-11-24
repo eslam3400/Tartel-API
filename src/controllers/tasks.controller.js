@@ -32,7 +32,8 @@ async function createUserTasks(req, res) {
 
 async function getUserTasks(req, res) {
   try {
-    const tasks = await db.Task.findAll({ userId: req.userId });
+    const tasks = await db.Task.findAll({ where: { userId: req.userId } });
+    console.log(req.userId);
     const data = {
       saved: [],
       within7Days: [],
