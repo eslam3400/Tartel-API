@@ -29,11 +29,17 @@ db.User = require('../models/user')(sequelize, Sequelize);
 db.TaskChapter = require('../models/task-chapter')(sequelize, Sequelize);
 db.GoodDeed = require('../models/good-deed')(sequelize, Sequelize);
 db.Task = require('../models/task')(sequelize, Sequelize);
+db.UserActivity = require('../models/user-activity')(sequelize, Sequelize);
+db.Achievement = require('../models/achievement')(sequelize, Sequelize);
+db.UserAchievement = require('../models/user-achievement')(sequelize, Sequelize);
 
 // relations
 db.GoodDeed.belongsTo(db.User);
 db.User.hasMany(db.GoodDeed);
 db.Task.belongsTo(db.User);
+db.UserActivity.belongsTo(db.User);
+db.UserAchievement.belongsTo(db.User);
+db.UserAchievement.belongsTo(db.Achievement);
 
 sequelize.sync({ alter: true });
 
