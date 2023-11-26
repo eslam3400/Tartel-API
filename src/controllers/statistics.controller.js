@@ -52,6 +52,8 @@ const getContinuously = async (userId) => {
     raw: true,
   });
 
+  console.log(userActivities)
+
   let longestSequence = [];
   let currentSequence = [userActivities[userActivities.length - 1]];
   let tempSequence = [userActivities[0]];
@@ -113,6 +115,7 @@ function getPlayingTimeFromSeconds(seconds) {
 
 const getQuranPledgeInHours = async (userId) => {
   const quranPledge = await db.UserActivity.findOne({ where: { userId, type: UserActivityType.QuranPledge } });
+  if (!quranPledge) return null;
   return getPlayingTimeFromSeconds(+quranPledge.value);
 }
 
@@ -122,6 +125,7 @@ const getLatestTelawa = async (userId) => {
     order: [['createdAt', 'DESC']],
     raw: true
   });
+  if (!latest) return null;
   return {
     seconds: latest.value,
     meta: {
