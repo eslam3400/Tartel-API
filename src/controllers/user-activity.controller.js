@@ -5,7 +5,7 @@ const { UserActivityType } = require('../models/enum/user-activity-type')
 async function create(req, res) {
   try {
     const { userId } = req;
-    const { type, value, meta } = req.body;
+    const { type, value, meta, page } = req.body;
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
@@ -26,18 +26,10 @@ async function create(req, res) {
         await db.UserActivity.create({ type, value: 1, userId });
         break;
       case UserActivityType.QuranReading:
-        const existingQuranReading = await db.UserActivity.findOne({ where: { userId, type } });
-        if (existingQuranReading) {
-          existingQuranReading.value = +existingQuranReading.value + value;
-          await existingQuranReading.save();
-        } else await db.UserActivity.create({ type, value, userId });
+        await db.UserActivity.create({ type, value, userId, meta: { page } });
         break;
       case UserActivityType.QuranPledge:
-        const existingQuranPledge = await db.UserActivity.findOne({ where: { userId, type } });
-        if (existingQuranPledge) {
-          existingQuranPledge.value = +existingQuranPledge.value + value;
-          await existingQuranPledge.save();
-        } else await db.UserActivity.create({ type, value, userId });
+        await db.UserActivity.create({ type, value, userId });
         break;
       case UserActivityType.Telawa:
         await db.UserActivity.create({ type, value, userId, meta });

@@ -52,8 +52,6 @@ const getContinuously = async (userId) => {
     raw: true,
   });
 
-  console.log(userActivities)
-
   let longestSequence = [];
   let currentSequence = [userActivities[userActivities.length - 1]];
   let tempSequence = [userActivities[0]];
@@ -114,9 +112,9 @@ function getPlayingTimeFromSeconds(seconds) {
 }
 
 const getQuranPledgeInHours = async (userId) => {
-  const quranPledge = await db.UserActivity.findOne({ where: { userId, type: UserActivityType.QuranPledge } });
+  const quranPledge = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranPledge } });
   if (!quranPledge) return null;
-  return getPlayingTimeFromSeconds(+quranPledge.value);
+  return getPlayingTimeFromSeconds(quranPledge.reduce((sum, obj) => sum + +obj["value"], 0));
 }
 
 const getLatestTelawa = async (userId) => {
@@ -144,6 +142,40 @@ const getLatestTelawa = async (userId) => {
   };
 }
 
+const getTelawat = async (req, res) => {
+  try {
+    const { userId } = req;
+    const telawat = await db.UserActivity.findAll({
+      where: { userId, type: UserActivityType.Telawa },
+      order: [['createdAt', 'DESC']],
+      raw: true
+    });
+    const data = [];
+    for (const telawa of telawat) {
+      data.push({
+        seconds: telawa.value,
+        meta: {
+          from: {
+            surah: telawa.meta.from.surah,
+            ayah: telawa.meta.from.ayah
+          },
+          to: {
+            surah: telawa.meta.to.surah,
+            ayah: telawa.meta.to.surah
+          },
+          mistakes: telawa.meta.mistakes,
+          record_link: telawa.meta.record_link
+        },
+        createdAt: telawa.createdAt
+      });
+    }
+    res.status(200).json({ data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
 const userOverview = async (req, res) => {
   try {
     const { userId } = req;
@@ -163,4 +195,115 @@ const userOverview = async (req, res) => {
   }
 };
 
-module.exports = { appOverview, userOverview };
+async function progress(req, res) {
+  try {
+    const { userId } = req;
+    const { currentSequenceLength } = await getContinuously(userId);
+
+    res.status(200).json({
+      current_continuously: currentSequenceLength,
+      last4monthsActivity: await getActivitiesWithin4Months(userId),
+      pages: await getNumberOfPagesActivities(userId),
+      pledges: await getTimeOfPledgesActivities(userId)
+    });
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
+async function getActivitiesWithin4Months(userId) {
+  const fourMonthsAgo = new Date();
+  fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
+
+  const records = await db.UserActivity.findAll({
+    where: {
+      userId,
+      type: UserActivityType.Continuously,
+      createdAt: {
+        [Op.gte]: fourMonthsAgo,
+      },
+    },
+  });
+
+  const dateCounts = {};
+
+  records.forEach(record => {
+    const dateKey = record.createdAt.toISOString().split('T')[0];
+    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + +record.value;
+  });
+
+  // Generate the result array with counts for each date
+  const data = [];
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+
+  for (let i = 0; i < 120; i++) {
+    const currentDateKey = currentDate.toISOString().split('T')[0];
+
+    data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
+    currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+  }
+
+  return data;
+}
+
+async function getNumberOfPagesActivities(userId) {
+  const records = await db.UserActivity.findAll({
+    where: {
+      userId,
+      type: UserActivityType.QuranReading,
+    },
+  });
+
+  const dateCounts = {};
+
+  records.forEach(record => {
+    const dateKey = record.createdAt.toISOString().split('T')[0];
+    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + +record.value;
+  });
+
+  const data = [];
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+
+  for (let i = 0; i < 366; i++) {
+    const currentDateKey = currentDate.toISOString().split('T')[0];
+
+    data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
+    currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+  }
+
+  return data;
+}
+
+async function getTimeOfPledgesActivities(userId) {
+  const records = await db.UserActivity.findAll({
+    where: {
+      userId,
+      type: UserActivityType.QuranPledge,
+    },
+  });
+
+  const dateCounts = {};
+
+  records.forEach(record => {
+    const dateKey = record.createdAt.toISOString().split('T')[0];
+    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + +record.value;
+  });
+
+  const data = [];
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+
+  for (let i = 0; i < 366; i++) {
+    const currentDateKey = currentDate.toISOString().split('T')[0];
+
+    data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
+    currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+  }
+
+  return data;
+}
+
+module.exports = { appOverview, userOverview, getTelawat, progress };
