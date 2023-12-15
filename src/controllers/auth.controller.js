@@ -27,4 +27,18 @@ const auth = async (req, res) => {
   }
 };
 
-module.exports = { auth }
+const invitation = async (req, res) => {
+  try {
+    const { userId } = req;
+    const { firebaseId } = req.params;
+    const invitationSender = await db.User.findOne({ where: { firebaseId } });
+    console.log({ firebaseId, invitationSender })
+    await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
+    return res.status(200).json();
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
+module.exports = { auth, invitation }

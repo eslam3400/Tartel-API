@@ -4,6 +4,6 @@ const achievementController = require('../controllers/achievement.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/', achievementController.create);
-router.get('/', achievementController.getAll);
+router.get('/', authMiddleware, achievementController.getAll);
 
 module.exports = router;

@@ -9,7 +9,6 @@ const statisticsRoutes = require('./routes/statistics.routes');
 const tasksRoutes = require('./routes/tasks.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const achievementRoutes = require('./routes/achievement.routes');
-const userAchievementRoutes = require('./routes/user-achievement.routes');
 const readFileAsync = util.promisify(fs.readFile);
 const multer = require('multer');
 
@@ -25,7 +24,6 @@ app.use("/api/statistics", statisticsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/user-activities', userActivityRoutes);
 app.use('/api/achievements', upload.single('image'), achievementRoutes);
-app.use('/api/user-achievements', userAchievementRoutes);
 
 app.get("/api/ayat", async (req, res) => {
   try {
