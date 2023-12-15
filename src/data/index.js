@@ -34,6 +34,7 @@ db.Achievement = require('../models/achievement')(sequelize, Sequelize);
 db.UserAchievement = require('../models/user-achievement')(sequelize, Sequelize);
 
 // relations
+db.User.belongsTo(db.User);
 db.GoodDeed.belongsTo(db.User);
 db.User.hasMany(db.GoodDeed);
 db.Task.belongsTo(db.User);

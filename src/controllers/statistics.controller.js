@@ -1,7 +1,7 @@
 const db = require('../data');
 const { Op } = require('sequelize');
-const { UserActivityType } = require('../models/enum/user-activity-type');
-const { getUserAchievements } = require('./user-achievement.controller');
+const { UserActivityType } = require('../models/enum/user-activity');
+const { getAchievementsService } = require('./achievement.controller');
 
 const appOverview = async (req, res) => {
   try {
@@ -95,7 +95,7 @@ const getContinuously = async (userId) => {
 }
 
 const getQuranPercentageCompletion = async (userId) => {
-  const completedPages = await db.Task.count({ where: { userId } });
+  const completedPages = await db.UserActivity.count({ where: { userId, type: UserActivityType.QuranCompletion } });
   return (completedPages / 604) * 100;
 }
 
@@ -117,14 +117,15 @@ const getQuranPledgeInHours = async (userId) => {
   return getPlayingTimeFromSeconds(quranPledge.reduce((sum, obj) => sum + +obj["value"], 0));
 }
 
-const getLatestTelawa = async (userId) => {
+const getLatestActivityService = async (userId) => {
   const latest = await db.UserActivity.findOne({
-    where: { userId, type: UserActivityType.Telawa },
+    where: { userId, type: { [Op.or]: [UserActivityType.Telawa, UserActivityType.QuranReading] } },
     order: [['createdAt', 'DESC']],
     raw: true
   });
   if (!latest) return null;
   return {
+    type: latest.type,
     seconds: latest.value,
     meta: {
       from: {
@@ -142,31 +143,37 @@ const getLatestTelawa = async (userId) => {
   };
 }
 
-const getTelawat = async (req, res) => {
+const getActivities = async (req, res) => {
   try {
     const { userId } = req;
-    const telawat = await db.UserActivity.findAll({
-      where: { userId, type: UserActivityType.Telawa },
+    const { filter } = req.params;
+
+    const activities = await db.UserActivity.findAll({
+      where: {
+        userId,
+        type: filter != "all" ? filter : { [Op.or]: [UserActivityType.Telawa, UserActivityType.QuranReading] }
+      },
       order: [['createdAt', 'DESC']],
       raw: true
     });
     const data = [];
-    for (const telawa of telawat) {
+    for (const activity of activities) {
       data.push({
-        seconds: telawa.value,
+        type: activity.type,
+        seconds: activity.value,
         meta: {
           from: {
-            surah: telawa.meta.from.surah,
-            ayah: telawa.meta.from.ayah
+            surah: activity.meta.from.surah,
+            ayah: activity.meta.from.ayah
           },
           to: {
-            surah: telawa.meta.to.surah,
-            ayah: telawa.meta.to.surah
+            surah: activity.meta.to.surah,
+            ayah: activity.meta.to.surah
           },
-          mistakes: telawa.meta.mistakes,
-          record_link: telawa.meta.record_link
+          mistakes: activity.meta.mistakes,
+          record_link: activity.meta.record_link
         },
-        createdAt: telawa.createdAt
+        createdAt: activity.createdAt
       });
     }
     res.status(200).json({ data });
@@ -186,8 +193,8 @@ const userOverview = async (req, res) => {
       current_continuously: currentSequenceLength,
       quran_completion: await getQuranPercentageCompletion(userId),
       quran_pledge: await getQuranPledgeInHours(userId),
-      latest_telawa: await getLatestTelawa(userId),
-      achievements: await getUserAchievements(userId)
+      latest_activity: await getLatestActivityService(userId),
+      achievements: await getAchievementsService(userId)
     });
   } catch (error) {
     console.log(error);
@@ -195,17 +202,31 @@ const userOverview = async (req, res) => {
   }
 };
 
-async function progress(req, res) {
+async function activitiesTracking(req, res) {
   try {
     const { userId } = req;
-    const { currentSequenceLength } = await getContinuously(userId);
 
-    res.status(200).json({
-      current_continuously: currentSequenceLength,
-      last4monthsActivity: await getActivitiesWithin4Months(userId),
-      pages: await getNumberOfPagesActivities(userId),
-      pledges: await getTimeOfPledgesActivities(userId)
-    });
+    res.status(200).json({ data: await getActivitiesWithin4Months(userId) });
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
+async function pagesTracking(req, res) {
+  try {
+    const { userId } = req;
+    res.status(200).json({ data: await getNumberOfPagesActivitiesService(userId) });
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
+async function pledgesTracking(req, res) {
+  try {
+    const { userId } = req;
+    res.status(200).json({ data: await getValueOfPledgeActivitiesService(userId) });
   } catch (error) {
     console.error('Error fetching records:', error);
     res.status(500).json({ msg: "Server error" });
@@ -248,62 +269,140 @@ async function getActivitiesWithin4Months(userId) {
   return data;
 }
 
-async function getNumberOfPagesActivities(userId) {
+function getWeekNumber(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+async function getNumberOfPagesActivitiesService(userId) {
   const records = await db.UserActivity.findAll({
     where: {
       userId,
-      type: UserActivityType.QuranReading,
+      type: UserActivityType.QuranCompletion,
     },
   });
-
-  const dateCounts = {};
+  const dayCounts = {};
+  const weekCounts = {};
+  const monthCounts = {};
 
   records.forEach(record => {
     const dateKey = record.createdAt.toISOString().split('T')[0];
-    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + +record.value;
+    dayCounts[dateKey] = (dayCounts[dateKey] || 0) + 1;
   });
 
-  const data = [];
-  const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+  const days = [];
+  const weeks = [];
+  const months = [];
 
-  for (let i = 0; i < 366; i++) {
-    const currentDateKey = currentDate.toISOString().split('T')[0];
-
-    data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
-    currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+  for (const key in dayCounts) {
+    if (Object.hasOwnProperty.call(dayCounts, key)) {
+      const element = dayCounts[key];
+      days.push({ [key]: element });
+    }
   }
 
-  return data;
+  days.forEach(item => {
+    const date = Object.keys(item)[0];
+    const value = item[date];
+
+    const week = getWeekNumber(new Date(date));
+    const month = new Date(date).getMonth() + 1; // Months are 0-indexed in JavaScript
+
+    // Group by week
+    if (!weekCounts[week]) {
+      weekCounts[week] = 0;
+    }
+    weekCounts[week] += value
+
+    // Group by month
+    if (!monthCounts[month]) {
+      monthCounts[month] = 0;
+    }
+    monthCounts[month] += value;
+  });
+
+  for (const key in weekCounts) {
+    if (Object.hasOwnProperty.call(weekCounts, key)) {
+      const element = weekCounts[key];
+      weeks.push({ [key]: element });
+    }
+  }
+
+  for (const key in monthCounts) {
+    if (Object.hasOwnProperty.call(monthCounts, key)) {
+      const element = monthCounts[key];
+      months.push({ [key]: element });
+    }
+  }
+
+  return { days, weeks, months };
 }
 
-async function getTimeOfPledgesActivities(userId) {
+async function getValueOfPledgeActivitiesService(userId) {
   const records = await db.UserActivity.findAll({
     where: {
       userId,
       type: UserActivityType.QuranPledge,
     },
   });
-
-  const dateCounts = {};
+  const dayCounts = {};
+  const weekCounts = {};
+  const monthCounts = {};
 
   records.forEach(record => {
     const dateKey = record.createdAt.toISOString().split('T')[0];
-    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + +record.value;
+    dayCounts[dateKey] = (dayCounts[dateKey] || 0) + +record.value;
   });
 
-  const data = [];
-  const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+  const days = [];
+  const weeks = [];
+  const months = [];
 
-  for (let i = 0; i < 366; i++) {
-    const currentDateKey = currentDate.toISOString().split('T')[0];
-
-    data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
-    currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+  for (const key in dayCounts) {
+    if (Object.hasOwnProperty.call(dayCounts, key)) {
+      const element = dayCounts[key];
+      days.push({ [key]: element });
+    }
   }
 
-  return data;
+  days.forEach(item => {
+    const date = Object.keys(item)[0];
+    const value = item[date];
+
+    const week = getWeekNumber(new Date(date));
+    const month = new Date(date).getMonth() + 1; // Months are 0-indexed in JavaScript
+
+    // Group by week
+    if (!weekCounts[week]) {
+      weekCounts[week] = 0;
+    }
+    weekCounts[week] += value
+
+    // Group by month
+    if (!monthCounts[month]) {
+      monthCounts[month] = 0;
+    }
+    monthCounts[month] += value;
+  });
+
+  for (const key in weekCounts) {
+    if (Object.hasOwnProperty.call(weekCounts, key)) {
+      const element = weekCounts[key];
+      weeks.push({ [key]: element });
+    }
+  }
+
+  for (const key in monthCounts) {
+    if (Object.hasOwnProperty.call(monthCounts, key)) {
+      const element = monthCounts[key];
+      months.push({ [key]: element });
+    }
+  }
+
+  return { days, weeks, months };
 }
 
-module.exports = { appOverview, userOverview, getTelawat, progress };
+module.exports = { appOverview, userOverview, getActivities, activitiesTracking, pagesTracking, pledgesTracking };
