@@ -42,6 +42,9 @@ async function create(req, res) {
       case UserActivityType.Telawa:
         await db.UserActivity.create({ type, value, userId, meta });
         break;
+      case UserActivityType.Search:
+        await db.UserActivity.create({ type, value, userId });
+        break;
       default:
         return res.status(400).json({ message: "type is not acceptable!" });
     }
