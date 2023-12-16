@@ -1,6 +1,6 @@
 const db = require('../data');
 const { Op } = require('sequelize');
-const { UserActivityType } = require('../models/enum/user-activity');
+const { UserActivityType, TrackingFilter } = require('../models/enum/user-activity');
 const { getAchievementsService } = require('./achievement.controller');
 
 const appOverview = async (req, res) => {
@@ -94,9 +94,49 @@ const getContinuously = async (userId) => {
   return { longestSequenceLength: longestSequence.length, currentSequenceLength: currentSequence.length };
 }
 
-const getQuranPercentageCompletion = async (userId) => {
-  const completedPages = await db.UserActivity.count({ where: { userId, type: UserActivityType.QuranCompletion } });
+const getQuranPercentageCompletion = async (userId, filter = null) => {
+  let completedPages
+  if (filter) {
+    completedPages = await db.UserActivity.count({ where: { userId, type: UserActivityType.QuranCompletion, createdAt: filter } });
+  }
+  else {
+    completedPages = await db.UserActivity.count({ where: { userId, type: UserActivityType.QuranCompletion } });
+  }
   return (completedPages / 604) * 100;
+}
+
+const getEarnedBadgesCount = async (userId, filter = null) => {
+  let earnedBadges
+  if (filter) {
+    earnedBadges = await db.UserAchievement.count({ where: { userId, createdAt: filter } });
+  }
+  else {
+    earnedBadges = await db.UserAchievement.count({ where: { userId } });
+  }
+  return earnedBadges;
+}
+
+const getSearchCount = async (userId, filter = null) => {
+  let searchCount
+  if (filter) {
+    searchCount = await db.UserActivity.count({ where: { userId, type: UserActivityType.Search, createdAt: filter } });
+  }
+  else {
+    searchCount = await db.UserActivity.count({ where: { userId, type: UserActivityType.Search } });
+  }
+  return searchCount;
+}
+
+const getQuranTelawaDuration = async (userId, filter = null) => {
+  let telawat
+  if (filter) {
+    telawat = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranReading, createdAt: filter } });
+  }
+  else {
+    telawat = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranReading } });
+  }
+  if (!telawat) return null;
+  return getPlayingTimeFromSeconds(telawat.reduce((sum, obj) => sum + +obj["value"], 0));
 }
 
 function getPlayingTimeFromSeconds(seconds) {
@@ -111,8 +151,14 @@ function getPlayingTimeFromSeconds(seconds) {
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
 
-const getQuranPledgeInHours = async (userId) => {
-  const quranPledge = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranPledge } });
+const getQuranPledgeInHours = async (userId, filter = null) => {
+  let quranPledge
+  if (filter) {
+    quranPledge = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranPledge, createdAt: filter } });
+  }
+  else {
+    quranPledge = await db.UserActivity.findAll({ where: { userId, type: UserActivityType.QuranPledge } });
+  }
   if (!quranPledge) return null;
   return getPlayingTimeFromSeconds(quranPledge.reduce((sum, obj) => sum + +obj["value"], 0));
 }
@@ -146,12 +192,12 @@ const getLatestActivityService = async (userId) => {
 const getActivities = async (req, res) => {
   try {
     const { userId } = req;
-    const { filter } = req.params;
+    const { filter } = req.query;
 
     const activities = await db.UserActivity.findAll({
       where: {
         userId,
-        type: filter != "all" ? filter : { [Op.or]: [UserActivityType.Telawa, UserActivityType.QuranReading] }
+        type: filter != null ? filter : { [Op.or]: [UserActivityType.Telawa, UserActivityType.QuranReading] }
       },
       order: [['createdAt', 'DESC']],
       raw: true
@@ -405,4 +451,40 @@ async function getValueOfPledgeActivitiesService(userId) {
   return { days, weeks, months };
 }
 
-module.exports = { appOverview, userOverview, getActivities, activitiesTracking, pagesTracking, pledgesTracking };
+async function progress(req, res) {
+  try {
+    const { userId } = req;
+    const { duration } = req.query;
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), (today.getDate()) - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+    const filter = {
+      [Op.between]: duration == TrackingFilter.Day ? [startOfDay, endOfDay] : (duration == TrackingFilter.Week ? [startOfWeek, endOfWeek] : [startOfYear, endOfYear])
+    }
+    res.status(200).json({
+      quran_pledge: await getQuranPledgeInHours(userId, duration ? filter : null),
+      quran_completion: await getQuranPercentageCompletion(userId, duration ? filter : null),
+      quran_telawa: await getQuranTelawaDuration(userId, duration ? filter : null),
+      earned_badges: await getEarnedBadgesCount(userId, duration ? filter : null),
+      search_count: await getSearchCount(userId, duration ? filter : null)
+    })
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
+module.exports = {
+  appOverview,
+  userOverview,
+  getActivities,
+  activitiesTracking,
+  pagesTracking,
+  pledgesTracking,
+  progress
+};

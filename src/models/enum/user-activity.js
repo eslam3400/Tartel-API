@@ -3,13 +3,15 @@ const UserActivityType = {
   QuranReading: 'quran-reading',
   QuranPledge: 'quran-pledge',
   Telawa: 'telawa',
-  QuranCompletion: 'quran-completion'
+  QuranCompletion: 'quran-completion',
+  Search: 'search'
 };
 
 const TrackingFilter = {
   Day: 'day',
   Week: 'week',
-  Month: 'month'
+  Month: 'month',
+  Year: 'year'
 }
 
-module.exports = { UserActivityType } 
+module.exports = { UserActivityType, TrackingFilter } 
