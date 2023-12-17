@@ -78,6 +78,7 @@ const getContinuously = async (userId) => {
 
   for (let i = userActivities.length - 1; i >= 0; i--) {
     const currentDate = new Date(userActivities[i].createdAt);
+    if (i - 1 < 0) break;
     const prevDate = new Date(userActivities[i - 1].createdAt);
 
     if (
