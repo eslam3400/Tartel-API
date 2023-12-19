@@ -147,6 +147,94 @@ app.get("/api/page-ayat", async (req, res) => {
   }
 });
 
+app.get("/api/page-ayat2", async (req, res) => {
+  try {
+    let { translation, type } = req.query;
+    translation = translation ?? 131;
+    const data = []
+    const typeName = type == null || type == 1 ? "uthmani" : "indopak";
+    const [response, translationResponse, quran, translationsResponse] = await Promise.all([
+      axios.get(`https://api.quran.com/api/v4/quran/verses/${typeName}`),
+      axios.get(`https://api.quran.com/api/v4/quran/translations/${translation}`),
+      readFileAsync('quran.json', 'utf8'),
+      axios.get("https://api.quran.com/api/v4/resources/translations")
+    ]);
+    const quranData = JSON.parse(quran);
+    const { translations } = translationResponse.data
+    const translationsList = translationsResponse.data.translations
+    for (let i = 0; i < response.data.verses.length; i++) {
+      const item = response.data.verses[i];
+      const surah = item.verse_key.split(":")[0];
+      const ayah = item.verse_key.split(":")[1];
+      const page = quranData.find(x => x.surah == surah && x.ayah == ayah).page
+      const existingPage = data.find(x => x.page === page)
+      if (existingPage) {
+        const existingSurah = existingPage.listOfSurah.find(x => x.surah == surah);
+        if (existingSurah) {
+          existingSurah.ayat.push({
+            surah,
+            surah_name: quranData[i].surrahname_no_diacratic.split(" ")[1],
+            ayah,
+            arabic: item[`text_${typeName}`],
+            arabic_words: item[`text_${typeName}`].split(" "),
+            translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
+            page: quranData[i].page,
+            hizb: quranData[i].hizb,
+            chapter: quranData[i].chapter,
+            translator: translationsList.find(x => x.id == translation).name
+          })
+          continue;
+        }
+        existingPage.listOfSurah.push({
+          surah,
+          surah_name: quranData[i].surrahname,
+          ayat: [{
+            surah,
+            surah_name: quranData[i].surrahname_no_diacratic.split(" ")[1],
+            ayah,
+            arabic: item[`text_${typeName}`],
+            arabic_words: item[`text_${typeName}`].split(" "),
+            translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
+            page: quranData[i].page,
+            hizb: quranData[i].hizb,
+            chapter: quranData[i].chapter,
+            translator: translationsList.find(x => x.id == translation).name
+          }]
+        })
+        continue;
+      }
+      data.push({
+        surah,
+        surah_name: quranData[i].surrahname,
+        translation_id: translation,
+        page,
+        listOfSurah: [
+          {
+            surah,
+            surah_name: quranData[i].surrahname,
+            ayat: [{
+              surah,
+              surah_name: quranData[i].surrahname_no_diacratic.split(" ")[1],
+              ayah,
+              arabic: item[`text_${typeName}`],
+              arabic_words: item[`text_${typeName}`].split(" "),
+              translation: translations[i].text.replace(/<sup(\s+foot_note=\d+)?>.*?<\/sup>/g, ''),
+              page: quranData[i].page,
+              hizb: quranData[i].hizb,
+              chapter: quranData[i].chapter,
+              translator: translationsList.find(x => x.id == translation).name
+            }]
+          }
+        ]
+      })
+    }
+    res.json({ translation_id: translation, data });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message })
+  }
+});
+
 app.get("/api/translations", async (req, res) => {
   try {
     const data = [];
