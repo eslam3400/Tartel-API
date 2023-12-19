@@ -208,18 +208,7 @@ const getActivities = async (req, res) => {
       data.push({
         type: activity.type,
         seconds: activity.value,
-        meta: {
-          from: {
-            surah: activity.meta.from.surah,
-            ayah: activity.meta.from.ayah
-          },
-          to: {
-            surah: activity.meta.to.surah,
-            ayah: activity.meta.to.surah
-          },
-          mistakes: activity.meta.mistakes,
-          record_link: activity.meta.record_link
-        },
+        meta: activity.meta,
         createdAt: activity.createdAt
       });
     }
