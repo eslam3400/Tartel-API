@@ -1,5 +1,5 @@
 const db = require('../data');
-const { Op } = require('sequelize');
+const { Op, BaseError } = require('sequelize');
 const { UserActivityType, TrackingFilter } = require('../models/enum/user-activity');
 const { getAchievementsService } = require('./achievement.controller');
 
@@ -8,14 +8,47 @@ const appOverview = async (req, res) => {
     const usersCount = await db.User.count();
     const topIndividualUsers = await db.GoodDeed.findAll({
       order: [['score', 'DESC']],
-      limit: 7,
+      limit: 9,
       where: { isShare: false }
     });
     const topShareUsers = await db.GoodDeed.findAll({
       order: [['score', 'DESC']],
-      limit: 7,
+      limit: 9,
       where: { isShare: true }
     });
+    const currentUser = await db.User.findOne({ where: { id: req.userId } })
+    if (!topShareUsers.find(x => x.userId == currentUser.id)) {
+      topShareUsers.push({
+        score: 0,
+        userId: currentUser.id,
+      })
+    }
+    if (!topIndividualUsers.find(x => x.userId == currentUser.id)) {
+      topIndividualUsers.push({
+        score: 0,
+        userId: currentUser.id,
+      })
+    }
+    if (topShareUsers.length < 9 || topIndividualUsers.length < 9) {
+      const users = await db.User.findAll({
+        order: [['createdAt', 'ASC']],
+        limit: 9,
+      })
+      for (const user of users) {
+        if (topShareUsers.length < 9 && !topShareUsers.find(x => x.userId == user.id)) {
+          topShareUsers.push({
+            score: 0,
+            userId: user.id,
+          })
+        }
+        if (topIndividualUsers.length < 9 && !topIndividualUsers.find(x => x.userId == user.id)) {
+          topIndividualUsers.push({
+            score: 0,
+            userId: user.id,
+          })
+        }
+      }
+    }
     const currentDate = new Date();
     const tenDaysAgo = new Date(currentDate);
     tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
@@ -126,6 +159,17 @@ const getSearchCount = async (userId, filter = null) => {
     searchCount = await db.UserActivity.count({ where: { userId, type: UserActivityType.Search } });
   }
   return searchCount;
+}
+
+const getAyahShareCount = async (userId, filter = null) => {
+  let ayahShareCount
+  if (filter) {
+    ayahShareCount = await db.UserActivity.count({ where: { userId, type: UserActivityType.AyahSharing, createdAt: filter } });
+  }
+  else {
+    ayahShareCount = await db.UserActivity.count({ where: { userId, type: UserActivityType.AyahSharing } });
+  }
+  return ayahShareCount;
 }
 
 const getQuranTelawaDuration = async (userId, filter = null) => {
@@ -294,15 +338,23 @@ async function getActivitiesWithin4Months(userId) {
   const data = [];
   const currentDate = new Date();
   currentDate.setDate(currentDate.getDate()); // Start from yesterday and go back 4 months
+  const monthsData = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  let months = [];
 
   for (let i = 0; i < 120; i++) {
     const currentDateKey = currentDate.toISOString().split('T')[0];
-
+    const month = monthsData[new Date(currentDateKey).getMonth()];
+    if (!months.includes(month)) {
+      months.push(month);
+    }
     data.unshift({ [currentDateKey]: dateCounts[currentDateKey] || 0 });
     currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
   }
-
-  return data;
+  months = months.reverse();
+  return { months, data };
 }
 
 function getWeekNumber(date) {
@@ -399,7 +451,7 @@ async function getValueOfPledgeActivitiesService(userId) {
 
   for (const key in dayCounts) {
     if (Object.hasOwnProperty.call(dayCounts, key)) {
-      const element = dayCounts[key];
+      const element = dayCounts[key] / 60;
       days.push({ [key]: element });
     }
   }
@@ -426,14 +478,14 @@ async function getValueOfPledgeActivitiesService(userId) {
 
   for (const key in weekCounts) {
     if (Object.hasOwnProperty.call(weekCounts, key)) {
-      const element = weekCounts[key];
+      const element = weekCounts[key] / (60 * 60);
       weeks.push({ [key]: element });
     }
   }
 
   for (const key in monthCounts) {
     if (Object.hasOwnProperty.call(monthCounts, key)) {
-      const element = monthCounts[key];
+      const element = monthCounts[key] / (60 * 60);
       months.push({ [key]: element });
     }
   }
@@ -461,7 +513,8 @@ async function progress(req, res) {
       quran_completion: await getQuranPercentageCompletion(userId, duration ? filter : null),
       quran_telawa: await getQuranTelawaDuration(userId, duration ? filter : null),
       earned_badges: await getEarnedBadgesCount(userId, duration ? filter : null),
-      search_count: await getSearchCount(userId, duration ? filter : null)
+      search_count: await getSearchCount(userId, duration ? filter : null),
+      ayah_share_count: await getAyahShareCount(userId, duration ? filter : null)
     })
   } catch (error) {
     console.error('Error fetching records:', error);

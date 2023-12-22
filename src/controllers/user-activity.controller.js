@@ -45,6 +45,9 @@ async function create(req, res) {
       case UserActivityType.Search:
         await db.UserActivity.create({ type, value, userId });
         break;
+      case UserActivityType.AyahSharing:
+        await db.UserActivity.create({ type, value, userId });
+        break;
       default:
         return res.status(400).json({ message: "type is not acceptable!" });
     }
