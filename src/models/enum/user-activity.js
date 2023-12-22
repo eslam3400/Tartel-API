@@ -4,7 +4,8 @@ const UserActivityType = {
   QuranPledge: 'quran-pledge',
   Telawa: 'telawa',
   QuranCompletion: 'quran-completion',
-  Search: 'search'
+  Search: 'search',
+  AyahSharing: 'ayah-sharing',
 };
 
 const TrackingFilter = {
