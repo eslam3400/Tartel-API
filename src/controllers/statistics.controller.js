@@ -274,7 +274,7 @@ const userOverview = async (req, res) => {
       quran_completion: await getQuranPercentageCompletion(userId),
       quran_pledge: await getQuranPledgeInHours(userId),
       latest_activity: await getLatestActivityService(userId),
-      achievements: await getAchievementsService(userId)
+      // achievements: await getAchievementsService(userId)
     });
   } catch (error) {
     console.log(error);
