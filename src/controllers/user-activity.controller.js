@@ -51,6 +51,16 @@ async function create(req, res) {
       default:
         return res.status(400).json({ message: "type is not acceptable!" });
     }
+    if (meta?.good_deeds) {
+      const userGoodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
+      if (userGoodDeeds) {
+        userGoodDeeds.score = +userGoodDeeds.score + meta.good_deeds;
+        await userGoodDeeds.save();
+      }
+      else {
+        await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
+      }
+    }
     return res.status(200).json({ message: "activity recorded!" });
   } catch (error) {
     console.log(error);
