@@ -33,9 +33,9 @@ const invitation = async (req, res) => {
     const { firebaseId } = req.params;
     const invitationSender = await db.User.findOne({ where: { firebaseId } });
     await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
-    const userShareGoodDeed = await db.GoodDeed.findOne({ where: { userId, isShare: true } })
+    const userShareGoodDeed = await db.GoodDeed.findOne({ where: { userId: invitationSender.id, isShare: true } })
     if (userShareGoodDeed) {
-      userShareGoodDeed.score += 10;
+      userShareGoodDeed.score = +userShareGoodDeed.score + 10;
       await userShareGoodDeed.save();
     } else {
       await db.GoodDeed.create({ userId, score: 10, isShare: true });
