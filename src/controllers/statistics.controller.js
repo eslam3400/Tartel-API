@@ -235,6 +235,24 @@ const getLatestActivityService = async (userId) => {
   };
 }
 
+const getGoodDeedsService = async (userId, filter = null) => {
+  let activities
+  if (filter) {
+    activities = await db.UserActivity.findAll({ where: { userId, createdAt: filter } });
+  }
+  else {
+    activities = await db.UserActivity.findAll({ where: { userId } });
+  }
+  if (!activities) return null;
+  return activities.reduce((sum, obj) => {
+    if (obj.meta?.good_deeds) {
+      return sum + obj.meta.good_deeds;
+    } else {
+      return sum;
+    }
+  }, 0);
+}
+
 const getActivities = async (req, res) => {
   try {
     const { userId } = req;
@@ -515,7 +533,8 @@ async function progress(req, res) {
       quran_telawa: await getQuranTelawaDuration(userId, duration ? filter : null),
       earned_badges: await getEarnedBadgesCount(userId, duration ? filter : null),
       search_count: await getSearchCount(userId, duration ? filter : null),
-      ayah_share_count: await getAyahShareCount(userId, duration ? filter : null)
+      ayah_share_count: await getAyahShareCount(userId, duration ? filter : null),
+      good_deeds: await getGoodDeedsService(userId, duration ? filter : null)
     })
   } catch (error) {
     console.error('Error fetching records:', error);
