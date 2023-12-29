@@ -24,7 +24,7 @@ async function create(req, res) {
           existingContinuously.value = +existingContinuously.value++;
           await existingContinuously.save();
         } else {
-          await db.UserActivity.create({ type, value: 1, userId });
+          await db.UserActivity.create({ type, value: 1, userId, meta });
         }
         break;
       case UserActivityType.QuranReading:
@@ -33,20 +33,20 @@ async function create(req, res) {
       case UserActivityType.QuranCompletion:
         const existingQuranCompletion = await db.UserActivity.findOne({ where: { userId, type, value } });
         if (!existingQuranCompletion) {
-          await db.UserActivity.create({ type, value, userId });
+          await db.UserActivity.create({ type, value, userId, meta });
         }
         break;
       case UserActivityType.QuranPledge:
-        await db.UserActivity.create({ type, value, userId });
+        await db.UserActivity.create({ type, value, userId, meta });
         break;
       case UserActivityType.Telawa:
         await db.UserActivity.create({ type, value, userId, meta });
         break;
       case UserActivityType.Search:
-        await db.UserActivity.create({ type, value, userId });
+        await db.UserActivity.create({ type, value, userId, meta });
         break;
       case UserActivityType.AyahSharing:
-        await db.UserActivity.create({ type, value, userId });
+        await db.UserActivity.create({ type, value, userId, meta });
         break;
       default:
         return res.status(400).json({ message: "type is not acceptable!" });
