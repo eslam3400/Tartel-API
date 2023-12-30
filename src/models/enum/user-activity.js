@@ -6,6 +6,7 @@ const UserActivityType = {
   QuranCompletion: 'quran-completion',
   Search: 'search',
   AyahSharing: 'ayah-sharing',
+  AppShare: 'app-share',
 };
 
 const TrackingFilter = {
