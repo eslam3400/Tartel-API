@@ -32,6 +32,8 @@ const invitation = async (req, res) => {
   try {
     const { userId } = req;
     const { firebaseId } = req.params;
+    const user = await db.User.findOne({ userId: userId });
+    if (user?.userId) return res.status(200).json();
     const invitationSender = await db.User.findOne({ where: { firebaseId } });
     await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
     const userShareGoodDeed = await db.GoodDeed.findOne({ where: { userId: invitationSender.id, isShare: true } })
