@@ -24,6 +24,7 @@ const auth = async (req, res) => {
     const token = generateToken(user);
     res.json({ token });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -32,6 +33,8 @@ const invitation = async (req, res) => {
   try {
     const { userId } = req;
     const { firebaseId } = req.params;
+    const user = await db.User.findOne({ where: { id: userId } });
+    if (user?.userId) return res.status(200).json();
     const invitationSender = await db.User.findOne({ where: { firebaseId } });
     await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
     const userShareGoodDeed = await db.GoodDeed.findOne({ where: { userId: invitationSender.id, isShare: true } })
