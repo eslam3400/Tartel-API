@@ -61,11 +61,15 @@ async function create(req, res) {
         await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
       }
       const user = await db.User.findOne({ where: { id: userId } });
-      if (user.userId) {
-        await db.GoodDeed.upsert(
-          { score: Sequelize.literal(`score + ${meta.good_deeds}`) },
-          { where: { userId: user.id, isShare: false } }
-        );
+      if (user?.userId) {
+        const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: user.userId, isShare: false } });
+        if (parentUserGoodDeeds) {
+          parentUserGoodDeeds.score = +parentUserGoodDeeds.score + meta.good_deeds;
+          await parentUserGoodDeeds.save();
+        }
+        else {
+          await db.GoodDeed.create({ userId: user.userId, score: meta.good_deeds, isShare: false });
+        }
       }
     }
     return res.status(200).json({ message: "activity recorded!" });
