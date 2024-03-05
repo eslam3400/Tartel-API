@@ -52,23 +52,23 @@ async function create(req, res) {
         return res.status(400).json({ message: "type is not acceptable!" });
     }
     if (meta?.good_deeds) {
-      const userGoodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
+      const userGoodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: true } });
       if (userGoodDeeds) {
         userGoodDeeds.score = +userGoodDeeds.score + meta.good_deeds;
         await userGoodDeeds.save();
       }
       else {
-        await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
+        await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: true });
       }
       const user = await db.User.findOne({ where: { id: userId } });
       if (user?.userId) {
-        const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: user.userId, isShare: false } });
+        const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: user.userId, isShare: true } });
         if (parentUserGoodDeeds) {
           parentUserGoodDeeds.score = +parentUserGoodDeeds.score + meta.good_deeds;
           await parentUserGoodDeeds.save();
         }
         else {
-          await db.GoodDeed.create({ userId: user.userId, score: meta.good_deeds, isShare: false });
+          await db.GoodDeed.create({ userId: user.userId, score: meta.good_deeds, isShare: true });
         }
       }
     }
