@@ -42,9 +42,9 @@ const invitation = async (req, res) => {
       userShareGoodDeed.score = +userShareGoodDeed.score + 10;
       await userShareGoodDeed.save();
     } else {
-      await db.GoodDeed.create({ userId, score: 10, isShare: true });
+      await db.GoodDeed.create({ userId: invitationSender.id, score: 10, isShare: true });
     }
-    await db.UserActivity.create({ type: UserActivityType.AppShare, value: "1", meta: { good_deeds: 10 }, userId });
+    await db.UserActivity.create({ type: UserActivityType.AppShare, value: "1", meta: { good_deeds: 10 }, userId: invitationSender.id });
     return res.status(200).json();
   } catch (error) {
     console.log(error);
