@@ -71,7 +71,8 @@ const appOverview = async (req, res) => {
         isCurrentUser: x.userId == req.userId
       })),
       tasks,
-      total_good_deeds: await db.GoodDeed.sum('score')
+      total_personal_good_deeds: await db.GoodDeed.sum('score', { where: { isShare: false } }),
+      total_share_good_deeds: await db.GoodDeed.sum('score', { where: { isShare: true } })
     });
   } catch (error) {
     console.log(error);

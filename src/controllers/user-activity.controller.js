@@ -61,22 +61,28 @@ async function create(req, res) {
         await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
       }
       const user = await db.User.findOne({ where: { id: userId } });
-      if (user?.userId) {
-        const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: user.userId, isShare: true } });
-        if (parentUserGoodDeeds) {
-          parentUserGoodDeeds.score = +parentUserGoodDeeds.score + meta.good_deeds;
-          await parentUserGoodDeeds.save();
-        }
-        else {
-          await db.GoodDeed.create({ userId: user.userId, score: meta.good_deeds, isShare: true });
-        }
-      }
+      await giveGoodDeedsToParentTree(meta.good_deeds, user.userId);
     }
     return res.status(200).json({ message: "activity recorded!" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: 'Server error' });
   }
+}
+
+async function giveGoodDeedsToParentTree(goodDeeds, parentId) {
+  if (!parentId) return;
+  const user = await db.User.findOne({ where: { id: parentId } });
+  if (!user) return;
+  const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: parentId, isShare: true } });
+  if (parentUserGoodDeeds) {
+    parentUserGoodDeeds.score = +parentUserGoodDeeds.score + goodDeeds;
+    await parentUserGoodDeeds.save();
+  }
+  else {
+    await db.GoodDeed.create({ userId: parentId, score: goodDeeds, isShare: true });
+  }
+  return await giveGoodDeedsToParentTree(goodDeeds, user.userId);
 }
 
 module.exports = { create };
