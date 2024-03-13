@@ -17,13 +17,13 @@ const appOverview = async (req, res) => {
       where: { isShare: true }
     });
     const currentUser = await db.User.findOne({ where: { id: req.userId } })
-    if (!topShareUsers.find(x => x.userId == currentUser.id)) {
+    if (!topShareUsers?.find(x => x?.userId == currentUser?.id)) {
       topShareUsers.push({
         score: 0,
         userId: currentUser.id,
       })
     }
-    if (!topIndividualUsers.find(x => x.userId == currentUser.id)) {
+    if (!topIndividualUsers?.find(x => x?.userId == currentUser?.id)) {
       topIndividualUsers.push({
         score: 0,
         userId: currentUser.id,
