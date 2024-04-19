@@ -10,6 +10,10 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true,
     },
+    device_token: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    }
   });
 
   return User;

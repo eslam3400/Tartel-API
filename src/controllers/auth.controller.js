@@ -8,7 +8,7 @@ const generateToken = (user) => {
 
 const auth = async (req, res) => {
   try {
-    const { phone, firebaseId } = req.body;
+    const { phone, firebaseId, device_token } = req.body;
 
     if (!phone || !firebaseId) return res.status({ msg: 'Invalid phone or firebaseId' });
 
@@ -18,9 +18,11 @@ const auth = async (req, res) => {
       user = await db.User.create({
         phone,
         firebaseId,
+        device_token
       });
     }
 
+    db.User.update({ device_token }, { where: { id: user.id } });
     const token = generateToken(user);
     res.json({ token });
   } catch (error) {
