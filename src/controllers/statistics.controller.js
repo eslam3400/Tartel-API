@@ -1,7 +1,6 @@
 const db = require('../data');
-const { Op, BaseError } = require('sequelize');
+const { Op } = require('sequelize');
 const { UserActivityType, TrackingFilter } = require('../models/enum/user-activity');
-const { getAchievementsService } = require('./achievement.controller');
 
 const appOverview = async (req, res) => {
   try {
@@ -29,7 +28,7 @@ const appOverview = async (req, res) => {
         userId: currentUser.id,
       })
     }
-    if (topShareUsers.length < 9 || topIndividualUsers.length < 9) {
+    if (topShareUsers.length < 9) {
       const users = await db.User.findAll({
         order: [['createdAt', 'ASC']],
         limit: 9,
@@ -58,8 +57,20 @@ const appOverview = async (req, res) => {
         updatedAt: { [Op.lt]: tenDaysAgo },
       }
     });
+    const users = [];
+    const userIds = topShareUsers.map(x => x.userId);
+    const usersData = await db.GoodDeed.findAll({ where: { id: { [Op.in]: userIds }, isShare: false } });
+    for (const user of topShareUsers) {
+      users.push({
+        personal: +(usersData.find(x => x.id == user.userId)?.score || 0),
+        score: +user.score,
+        userId: user.userId,
+        isCurrentUser: user.userId == req.userId
+      });
+    }
     res.json({
       usersCount,
+      users,
       topShareUsers: topShareUsers.map(x => ({
         score: +x.score,
         userId: x.userId,
