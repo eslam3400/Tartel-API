@@ -32,8 +32,12 @@ const auth = async (req, res) => {
       }
       else if (device_id) query.where.deviceId = device_id;
     }
-
-    let user = await db.User.findOne(query);
+    const users = await db.User.findAll(query);
+    let user = null;
+    if (users && users.length > 0) user = users[users.length - 1];
+    if (users && users.length > 1) {
+      await db.User.destroy({ where: { id: users[0].id } });
+    }
     if (!user) {
       user = await db.User.create({
         email,
@@ -47,6 +51,7 @@ const auth = async (req, res) => {
     if (is_new_auth && user) {
       if (!user.email && email) updateQuery.email = email;
       if (!user.deviceId && device_id) updateQuery.deviceId = device_id;
+      if (!user.phone && phone) updateQuery.phone = phone;
     }
 
     db.User.update(updateQuery, { where: { id: user.id } });
