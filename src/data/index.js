@@ -43,6 +43,4 @@ db.UserActivity.belongsTo(db.User);
 db.UserAchievement.belongsTo(db.User);
 db.UserAchievement.belongsTo(db.Achievement);
 
-sequelize.sync({ alter: true });
-
 module.exports = db;

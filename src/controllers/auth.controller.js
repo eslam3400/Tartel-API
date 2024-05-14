@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../data');
 const { UserActivityType } = require('../models/enum/user-activity');
+const { Op } = require('sequelize');
 
 const generateToken = (user) => {
   return jwt.sign({ user: user.id }, process.env.SECRET_KEY, {});
@@ -8,21 +9,47 @@ const generateToken = (user) => {
 
 const auth = async (req, res) => {
   try {
-    const { phone, firebaseId, device_token } = req.body;
+    const { email, phone, firebaseId, device_id, device_token, is_new_auth } = req.body;
 
-    if (!phone || !firebaseId) return res.status({ msg: 'Invalid phone or firebaseId' });
+    if (!is_new_auth && (!phone || !firebaseId)) {
+      return res.status(400).json({ msg: 'Invalid phone or firebaseId' });
+    }
+    if (is_new_auth && !email && !device_id) return res.status({ msg: 'Invalid email or deviceId' });
 
-    let user = await db.User.findOne({ where: { phone, firebaseId } });
+    const query = { where: {} };
+    // old way
+    if (!is_new_auth) {
+      query.where.phone = phone;
+      query.where.firebaseId = firebaseId;
+    }
+    // new way
+    else {
+      if (email && device_id) {
+        const orQuery = [];
+        orQuery.push({ email }, { deviceId: device_id });
+        if (phone) orQuery.push({ phone });
+        query.where[Op.or] = orQuery;
+      }
+      else if (device_id) query.where.deviceId = device_id;
+    }
 
+    let user = await db.User.findOne(query);
     if (!user) {
       user = await db.User.create({
-        phone,
+        email,
         firebaseId,
+        phone,
+        deviceId: device_id,
         device_token
       });
     }
+    const updateQuery = { device_token, firebaseId };
+    if (is_new_auth && user) {
+      if (!user.email && email) updateQuery.email = email;
+      if (!user.deviceId && device_id) updateQuery.deviceId = device_id;
+    }
 
-    db.User.update({ device_token }, { where: { id: user.id } });
+    db.User.update(updateQuery, { where: { id: user.id } });
     const token = generateToken(user);
     res.json({ token });
   } catch (error) {

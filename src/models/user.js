@@ -2,15 +2,21 @@ module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define('user', {
     phone: {
       type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
+      allowNull: true,
     },
     firebaseId: {
       type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
+      allowNull: true,
     },
     device_token: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    deviceId: {
       type: Sequelize.STRING,
       allowNull: true,
     }

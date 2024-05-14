@@ -456,7 +456,7 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
 const PORT = process.env.PORT || 80;
 
 db.sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     app.listen(PORT, () =>
       console.log(`Server is running on http://localhost:${PORT}`)
