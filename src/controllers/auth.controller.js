@@ -16,27 +16,18 @@ const auth = async (req, res) => {
     }
     if (is_new_auth && !email && !device_id) return res.status({ msg: 'Invalid email or deviceId' });
 
-    const query = { where: {} };
+    let user = null;
     // old way
     if (!is_new_auth) {
-      query.where.phone = phone;
-      query.where.firebaseId = firebaseId;
+      user = await db.User.findOne({ where: { phone, firebaseId } });
     }
     // new way
     else {
       if (email && device_id) {
-        const orQuery = [];
-        orQuery.push({ email }, { deviceId: device_id });
-        if (phone) orQuery.push({ phone });
-        query.where[Op.or] = orQuery;
+        user = await db.User.findOne({ where: { email } });
+        if (!user) user = await db.User.findOne({ where: { deviceId: device_id } });
       }
-      else if (device_id) query.where.deviceId = device_id;
-    }
-    const users = await db.User.findAll(query);
-    let user = null;
-    if (users && users.length > 0) user = users[users.length - 1];
-    if (users && users.length > 1) {
-      await db.User.destroy({ where: { id: users[0].id } });
+      else if (device_id) user = await db.User.findOne({ where: { deviceId: device_id } });
     }
     if (!user) {
       user = await db.User.create({
