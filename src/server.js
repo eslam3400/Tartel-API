@@ -416,7 +416,7 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
         const ayah = +x.verse_key.split(":")[1];
         const ayahDetails = quranData.find(x => x.ayah == ayah && x.surah == surah);
         return {
-          url: `https://verses.quran.com/${x.url}`,
+          url: x.url.includes('.com') ? `https:${x.url}` : `https://verses.quran.com/${x.url}`,
           surah,
           ayah,
           page: ayahDetails.page,
