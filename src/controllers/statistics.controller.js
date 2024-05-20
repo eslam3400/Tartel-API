@@ -70,7 +70,7 @@ const appOverview = async (req, res) => {
       });
     }
     for (const user of topIndividualUsers) {
-      users.push({
+      individualUsers.push({
         personal: +(goodDeeds.find(x => x.userId == user.userId)?.score || 0),
         score: +user.score,
         userId: user.userId,
