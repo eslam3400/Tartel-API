@@ -80,7 +80,7 @@ const appOverview = async (req, res) => {
     res.json({
       usersCount,
       users,
-      topIndividualUsers,
+      individualUsers,
       topShareUsers: topShareUsers.map(x => ({
         score: +x.score,
         userId: x.userId,
