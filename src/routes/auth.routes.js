@@ -4,6 +4,6 @@ const authController = require('../controllers/auth.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/', authController.auth);
-router.get('/invitation-by/:firebaseId', authMiddleware, authController.invitation);
+router.get('/invitation-by/:token', authMiddleware, authController.invitation);
 
 module.exports = router;

@@ -57,10 +57,11 @@ const auth = async (req, res) => {
 const invitation = async (req, res) => {
   try {
     const { userId } = req;
-    const { device_token } = req.params;
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const user = await db.User.findOne({ where: { id: userId } });
     if (user?.userId) return res.status(200).json();
-    const invitationSender = await db.User.findOne({ where: { device_token } });
+    const invitationSender = await db.User.findOne({ where: { id: decoded.user } });
     await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
     const userShareGoodDeed = await db.GoodDeed.findOne({ where: { userId: invitationSender.id, isShare: true } })
     if (userShareGoodDeed) {
