@@ -58,19 +58,10 @@ const appOverview = async (req, res) => {
       }
     });
     const users = [];
-    const individualUsers = [];
     const userIds = topShareUsers.map(x => x.userId);
     const goodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: userIds }, isShare: false }, raw: true });
-    for (const user of topShareUsers) {
-      users.push({
-        personal: +(goodDeeds.find(x => x.userId == user.userId)?.score || 0),
-        score: +user.score,
-        userId: user.userId,
-        isCurrentUser: user.userId == req.userId
-      });
-    }
     for (const user of topIndividualUsers) {
-      individualUsers.push({
+      users.push({
         personal: +(goodDeeds.find(x => x.userId == user.userId)?.score || 0),
         score: +user.score,
         userId: user.userId,
