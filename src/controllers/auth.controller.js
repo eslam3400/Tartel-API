@@ -60,6 +60,7 @@ const invitation = async (req, res) => {
     const { token } = req.params;
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const user = await db.User.findOne({ where: { id: userId } });
+    if (userId == decoded.user) return res.status(400).json({ msg: 'Invalid user' });
     if (user?.userId) return res.status(200).json();
     const invitationSender = await db.User.findOne({ where: { id: decoded.user } });
     await db.User.update({ userId: invitationSender.id }, { where: { id: userId } });
