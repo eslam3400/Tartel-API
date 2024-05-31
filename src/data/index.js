@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const dotenv = require('dotenv');
 
 dotenv.config();
-
+console.log(process);
 const sequelize = new Sequelize(
   process.env.DB_DATABASE,
   process.env.DB_USER,
