@@ -1,3 +1,5 @@
+const OneSignal = require('@onesignal/node-onesignal');
+
 function getLastFourMonths() {
   const currentDate = new Date();
   const months = [];
@@ -20,4 +22,18 @@ function getArabicMonthName(month) {
   return arabicMonthNames[month.getMonth()];
 }
 
-module.exports = { getLastFourMonths, getArabicMonthName }
+function sendNotification({title, message, userToken}) {
+  const configuration = OneSignal.createConfiguration({
+    restApiKey: process.env.ONESIGNAL_API_KEY,
+    userAuthKey: process.env.ONESIGNAL_AUTH_KEY,
+  });
+  const client = new OneSignal.DefaultApi(configuration);
+  return client.createNotification({
+    app_id: process.env.ONESIGNAL_APP_ID,
+    include_external_user_ids: [userToken],
+    contents: { en: message },
+    headings: { en: title },
+  });
+}
+
+module.exports = { getLastFourMonths, getArabicMonthName, sendNotification }

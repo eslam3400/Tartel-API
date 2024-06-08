@@ -9,8 +9,11 @@ const client = new OneSignal.DefaultApi(configuration);
 (async () => {
   const apps = await client.getApps()
   console.log(apps);
-  client.createNotification({
+  const response = await client.createNotification({
     app_id: "ec7d5320-1172-4f79-858c-9b163fc640df",
-    include_subscription_ids: ["<subscription_id>"]
-  })
+    include_subscription_ids: ["24b53bcc-9098-4a8d-ae32-b19e2ffaadea"],
+    contents: { en: "Test Body" },
+    headings: { en: "Test Head" },
+  });
+  console.log(response);
 })()
