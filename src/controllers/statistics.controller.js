@@ -4,6 +4,7 @@ const { UserActivityType, TrackingFilter } = require('../models/enum/user-activi
 
 const appOverview = async (req, res) => {
   try {
+    const { is_share } = req.query;
     const usersCount = await db.User.count();
     const topIndividualUsers = await db.GoodDeed.findAll({
       order: [['score', 'DESC']],
@@ -62,13 +63,25 @@ const appOverview = async (req, res) => {
     const shareGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: shareUserIds }, isShare: true }, raw: true });
     const individualUserIds = topIndividualUsers.map(x => x.userId);
     const individualGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: individualUserIds }, isShare: false }, raw: true });
-    for (const user of topIndividualUsers) {
-      users.push({
-        score: +(shareGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
-        personal: +(individualGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
-        userId: user.userId,
-        isCurrentUser: user.userId == req.userId
-      });
+    if (is_share == 'true') {
+      for (const user of topShareUsers) {
+        users.push({
+          score: +(shareGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
+          personal: +(individualGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
+          userId: user.userId,
+          isCurrentUser: user.userId == req.userId
+        });
+      }
+    }
+    else {
+      for (const user of topIndividualUsers) {
+        users.push({
+          score: +(shareGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
+          personal: +(individualGoodDeeds.find(x => x.userId == user.userId)?.score || 0),
+          userId: user.userId,
+          isCurrentUser: user.userId == req.userId
+        });
+      }
     }
     res.json({
       usersCount,

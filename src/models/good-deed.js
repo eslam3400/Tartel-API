@@ -8,6 +8,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       allowNull: false,
     },
+    lastNotification: {
+      type: Sequelize.BIGINT,
+      defaultValue: 0,
+    },
   });
 
   return GoodDeed;

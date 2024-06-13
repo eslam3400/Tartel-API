@@ -1,6 +1,7 @@
 const db = require("../data");
 const { Op } = require("sequelize")
-const { UserActivityType } = require('../models/enum/user-activity')
+const { UserActivityType } = require('../models/enum/user-activity');
+const { sendNotification } = require("../utils");
 
 async function create(req, res) {
   try {
@@ -53,14 +54,22 @@ async function create(req, res) {
     }
     if (meta?.good_deeds) {
       const userGoodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
+      const user = await db.User.findOne({ where: { id: userId } });
       if (userGoodDeeds) {
         userGoodDeeds.score = +userGoodDeeds.score + meta.good_deeds;
+        if (userGoodDeeds.score - userGoodDeeds.lastNotification >= 10000) {
+          userGoodDeeds.lastNotification = userGoodDeeds.score;
+          await sendNotification({
+            title: "الأعمال الصالحة",
+            message: `لقد حصلت على ${userGoodDeeds.score} من الأعمال الصالحة`,
+            userToken: user.device_token,
+          });
+        }
         await userGoodDeeds.save();
       }
       else {
         await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
       }
-      const user = await db.User.findOne({ where: { id: userId } });
       await giveGoodDeedsToParentTree(meta.good_deeds, user.userId);
     }
     return res.status(200).json({ message: "activity recorded!" });
