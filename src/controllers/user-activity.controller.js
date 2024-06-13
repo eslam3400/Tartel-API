@@ -59,11 +59,11 @@ async function create(req, res) {
         userGoodDeeds.score = +userGoodDeeds.score + meta.good_deeds;
         if (userGoodDeeds.score - userGoodDeeds.lastNotification >= 10000) {
           userGoodDeeds.lastNotification = userGoodDeeds.score;
-          await sendNotification({
+          sendNotification({
             title: "الأعمال الصالحة",
             message: `لقد حصلت على ${userGoodDeeds.score} من الأعمال الصالحة`,
             userToken: user.device_token,
-          });
+          }).catch(x => x);
         }
         await userGoodDeeds.save();
       }

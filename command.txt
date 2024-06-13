@@ -1,1 +1,1 @@
-ssh -i "./tarteel server.pem" ec2-user@ec2-51-20-96-110.eu-north-1.compute.amazonaws.com
+ssh -i "./tarteel server.pem" ec2-user@ec2-16-171-107-217.eu-north-1.compute.amazonaws.com
