@@ -3,4 +3,4 @@ ssh -i "./tarteel server.pem" ec2-user@ec2-16-171-107-217.eu-north-1.compute.ama
 
 hostinger
 ssh root@85.31.234.137
-cC>czR9RdnR=3Q$#=/9/
+Eslam3400@VPS
