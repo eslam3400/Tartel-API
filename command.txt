@@ -1,1 +1,6 @@
+aws
 ssh -i "./tarteel server.pem" ec2-user@ec2-16-171-107-217.eu-north-1.compute.amazonaws.com
+
+hostinger
+ssh root@85.31.234.137
+cC>czR9RdnR=3Q$#=/9/
