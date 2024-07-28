@@ -22,5 +22,4 @@ async function continueAssignUsers() {
   }
 }
 
-console.log("cron job started");
 cron.schedule('0 0 * * *', continueAssignUsers);

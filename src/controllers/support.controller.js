@@ -10,7 +10,7 @@ async function create(req, res) {
     }
     await db.Support.create({ userId, paid, need });
     await assignSupports(userId);
-    return res.status(200).json({ message: "activity recorded!" });
+    return res.status(200).json({ message: "support recorded!" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: 'Server error' });
