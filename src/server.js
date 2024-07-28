@@ -11,6 +11,7 @@ const userActivityRoutes = require('./routes/user-activity.routes');
 const achievementRoutes = require('./routes/achievement.routes');
 const readFileAsync = util.promisify(fs.readFile);
 const multer = require('multer');
+require('./cron/index.cron');
 
 const app = express();
 const storage = multer.memoryStorage();
