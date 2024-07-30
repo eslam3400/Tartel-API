@@ -19,7 +19,11 @@ module.exports = (sequelize, Sequelize) => {
     deviceId: {
       type: Sequelize.STRING,
       allowNull: true,
-    }
+    },
+    isSupport: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+    },
   });
 
   return User;

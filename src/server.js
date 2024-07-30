@@ -9,8 +9,10 @@ const statisticsRoutes = require('./routes/statistics.routes');
 const tasksRoutes = require('./routes/tasks.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const achievementRoutes = require('./routes/achievement.routes');
+const supportRoutes = require('./routes/support.routes');
 const readFileAsync = util.promisify(fs.readFile);
 const multer = require('multer');
+require('./cron/index.cron');
 
 const app = express();
 const storage = multer.memoryStorage();
@@ -24,6 +26,7 @@ app.use("/api/statistics", statisticsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/user-activities', userActivityRoutes);
 app.use('/api/achievements', upload.single('image'), achievementRoutes);
+app.use('/api/supports', supportRoutes);
 
 app.get("/api/ayat", async (req, res) => {
   try {
