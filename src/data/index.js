@@ -34,6 +34,7 @@ db.UserActivity = require('../models/user-activity')(sequelize, Sequelize);
 db.Achievement = require('../models/achievement')(sequelize, Sequelize);
 db.UserAchievement = require('../models/user-achievement')(sequelize, Sequelize);
 db.Support = require('../models/support')(sequelize, Sequelize);
+db.SupportGoodDeed = require('../models/support-good-deed')(sequelize, Sequelize);
 
 // relations
 db.User.belongsTo(db.User);
@@ -44,5 +45,6 @@ db.UserActivity.belongsTo(db.User);
 db.UserAchievement.belongsTo(db.User);
 db.UserAchievement.belongsTo(db.Achievement);
 db.Support.belongsTo(db.User);
+db.SupportGoodDeed.belongsTo(db.User);
 
 module.exports = db;
