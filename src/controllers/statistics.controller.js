@@ -2,6 +2,100 @@ const db = require('../data');
 const { Op } = require('sequelize');
 const { UserActivityType, TrackingFilter } = require('../models/enum/user-activity');
 
+const getTop10GoodDeeds = async (isShare = false) => {
+  return db.GoodDeed.findAll({
+    order: [['score', 'DESC']],
+    limit: 9,
+    where: { isShare },
+    raw: true
+  })
+}
+
+const updateUserGoodDeedInfo = async (info, iteration = 0) => {
+  const limit = 1000;
+  const goodDeeds = await db.GoodDeed.findAll({
+    order: [['score', 'DESC']],
+    limit,
+    offset: iteration * limit
+  });
+  if (goodDeeds.length == 0) return;
+  const goodDeedsFilter = goodDeeds.filter(x => x.userId == info.id);
+  if (goodDeedsFilter.length == 2) {
+    info.shareRank = (iteration * 1000) + goodDeeds.findIndex(x => x.userId == info.id && x.isShare);
+    info.individualRank = (iteration * 1000) + goodDeeds.findIndex(x => x.userId == info.id && !x.isShare);
+    info.shareGoodDeed = goodDeedsFilter.find(x => x.isShare);
+    info.individualGoodDeed = goodDeedsFilter.find(x => !x.isShare);
+  } else {
+    const index = goodDeeds.findIndex(x => x.userId == info.id);
+    if (index == -1) return getUserGoodDeedsRank(info, ++iteration);
+    if (goodDeeds[index].isShare) {
+      info.shareRank = (iteration * 1000) + index;
+      info.shareGoodDeed = goodDeeds[index];
+    } else {
+      info.individualRank = (iteration * 1000) + index;
+      info.individualGoodDeed = goodDeeds[index];
+    }
+  }
+}
+
+const getTasksCount = async (userId) => {
+  const currentDate = new Date();
+  const tenDaysAgo = new Date(currentDate);
+  tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+  return db.Task.count({
+    where: {
+      userId,
+      updatedAt: { [Op.lt]: tenDaysAgo },
+    }
+  });
+}
+
+const getUserFullGoodDeed = (goodDeed, otherGoodDeed) => {
+  return {
+    shareScore: goodDeed.isShare ? goodDeed.score : otherGoodDeed?.score ?? 0,
+    personalScore: !goodDeed.isShare ? goodDeed.score : otherGoodDeed?.score ?? 0,
+    userId: goodDeed.userId
+  }
+}
+
+const appOverviewV2 = async (req, res) => {
+  try {
+    const { userId } = req;
+    const currentUserInfo = { id: userId, shareRank: 0, individualRank: 0, shareGoodDeed: null, individualGoodDeed: null };
+    const [usersCount, topIndividualUsers, topShareUsers, tasks, total_personal_good_deeds, total_share_good_deeds] = await Promise.all([
+      db.User.count(),
+      await getTop10GoodDeeds(false),
+      await getTop10GoodDeeds(true),
+      getTasksCount(userId),
+      db.GoodDeed.sum('score', { where: { isShare: false } }),
+      db.GoodDeed.sum('score', { where: { isShare: true } }),
+      updateUserGoodDeedInfo(currentUserInfo)
+    ]);
+    const individualGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topIndividualUsers.map(x => x.userId) }, isShare: false }, raw: true });
+    const shareGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topShareUsers.map(x => x.userId) }, isShare: true }, raw: true });
+    const finalTopIndividualUsers = [];
+    const finalTopShareUsers = [];
+    for (let current of topIndividualUsers) {
+      finalTopIndividualUsers.push(getUserFullGoodDeed(current, shareGoodDeeds.find(x => x.userId == current.userId)));
+    }
+    for (let current of topShareUsers) {
+      finalTopShareUsers.push(getUserFullGoodDeed(current, individualGoodDeeds.find(x => x.userId == current.userId)));
+    }
+    res.json({
+      usersCount,
+      topIndividualUsers: finalTopIndividualUsers,
+      topShareUsers: finalTopShareUsers,
+      tasks,
+      total_personal_good_deeds,
+      total_share_good_deeds,
+      currentUserInfo
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
 const appOverview = async (req, res) => {
   try {
     const { is_share } = req.query;
@@ -576,5 +670,6 @@ module.exports = {
   activitiesTracking,
   pagesTracking,
   pledgesTracking,
-  progress
+  progress,
+  appOverviewV2
 };
