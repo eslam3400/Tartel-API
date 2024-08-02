@@ -17,6 +17,19 @@ async function create(req, res) {
   }
 }
 
+async function status(req, res) {
+  try {
+    const { userId } = req;
+    const supports = await db.Support.findAll({ where: { userId } });
+    if (!supports) return res.status(404).json({ message: "Supports not found" });
+    const supportGoodDeed = await db.SupportGoodDeed.findOne({ where: { userId } });
+    return res.status(200).json({ supports, supportGoodDeed });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
 async function assignSupports(userId) {
   try {
     const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
@@ -37,4 +50,4 @@ async function assignSupports(userId) {
   }
 }
 
-module.exports = { create, assignSupports };
+module.exports = { create, assignSupports, status };
