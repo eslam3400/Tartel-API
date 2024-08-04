@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const SupportGoodDeed = sequelize.define('support', {
+    const SupportGoodDeed = sequelize.define('support-good-deed', {
         score: {
             type: Sequelize.INTEGER,
             defaultValue: 0,
