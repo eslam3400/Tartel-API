@@ -663,6 +663,80 @@ async function progress(req, res) {
   }
 }
 
+function getStartDateOfCurrentWeek() {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - dayOfWeek);
+  return startDate;
+}
+
+async function activitiesScoreQuery(options) {
+  return db.UserActivity.findAll({
+    where: {
+      type: {
+        [Op.notIn]: [
+          UserActivityType.AyahSharing,
+          UserActivityType.Search,
+        ],
+      },
+      createdAt: {
+        [Op.gte]: options.date,
+      },
+    },
+    attributes: [
+      'userId',
+      [db.Sequelize.fn('SUM', db.Sequelize.cast(db.Sequelize.col('value'), 'INTEGER')), 'totalValue']
+    ],
+    group: ['userId'],
+    order: [['totalValue', 'DESC']],
+    limit: options.limit ?? 5,
+    offset: options.offset ?? 0,
+    raw: true,
+  });
+}
+
+async function getActivitiesScore(req, res) {
+  try {
+    const { userId } = req;
+    const { duration } = req.query;
+    let date = new Date();
+    if (duration == TrackingFilter.Week) date = getStartDateOfCurrentWeek();
+    else if (duration == TrackingFilter.Month) date.setDate(1);
+    else if (duration == TrackingFilter.Year) {
+      date.setMonth(0);
+      date.setDate(1);
+    }
+    date.setHours(0, 0, 0, 0);
+    const activities = await activitiesScoreQuery({ date });
+    const currentUserInfo = { userId, rank: 0, score: 0 }
+    const currentUserIndex = activities?.findIndex(x => x.userId == userId);
+    if (currentUserIndex > -1) {
+      currentUserInfo.rank = currentUserIndex + 1;
+      currentUserInfo.score = activities[currentUserIndex].totalValue;
+    }
+    else {
+      let offset = 5;
+      let limit = 1000;
+      while (true) {
+        const newActivities = await activitiesScoreQuery({ date, limit, offset });
+        const currentUserIndex = newActivities?.findIndex(x => x.userId == userId);
+        if (currentUserIndex > -1) {
+          currentUserInfo.rank = offset + currentUserIndex + 1;
+          currentUserInfo.score = newActivities[currentUserIndex].totalValue;
+          break;
+        }
+        if (newActivities.length == 0) break;
+        offset += limit;
+      }
+    }
+    res.json({ activities, currentUserInfo });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
 module.exports = {
   appOverview,
   userOverview,
@@ -671,5 +745,6 @@ module.exports = {
   pagesTracking,
   pledgesTracking,
   progress,
-  appOverviewV2
+  appOverviewV2,
+  getActivitiesScore
 };

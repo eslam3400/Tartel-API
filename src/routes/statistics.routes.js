@@ -5,6 +5,7 @@ const authMiddleware = require('../middlewares/auth.middleware')
 
 router.get('/', authMiddleware, statisticsController.appOverview);
 router.get('/v2', authMiddleware, statisticsController.appOverviewV2);
+router.get('/activities', authMiddleware, statisticsController.getActivitiesScore);
 router.get('/user', authMiddleware, statisticsController.userOverview);
 router.get('/user/activities-tracking', authMiddleware, statisticsController.activitiesTracking);
 router.get('/user/pages-tracking', authMiddleware, statisticsController.pagesTracking);
