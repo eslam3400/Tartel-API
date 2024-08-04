@@ -746,5 +746,7 @@ module.exports = {
   pledgesTracking,
   progress,
   appOverviewV2,
-  getActivitiesScore
+  getActivitiesScore,
+  activitiesScoreQuery,
+  getStartDateOfCurrentWeek
 };
