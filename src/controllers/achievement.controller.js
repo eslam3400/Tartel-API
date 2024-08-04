@@ -43,4 +43,15 @@ async function getAll(req, res) {
   }
 }
 
-module.exports = { create, getAll, getAchievementsService };
+async function getMine(req, res) {
+  try {
+    const { userId } = req;
+    const userAchievements = await db.UserAchievement.findAll({ where: { userId } });
+    return res.status(200).json(userAchievements);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
+module.exports = { create, getAll, getAchievementsService, getMine };

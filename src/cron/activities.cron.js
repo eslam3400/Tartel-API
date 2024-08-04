@@ -38,7 +38,7 @@ async function activitiesReward(duration = "") {
   }
 }
 
-// End of the day (23:59 every day)
+// End of the day (23:55 every day)
 cron.schedule('55 23 * * *', () => activitiesReward());
 
 // End of the week (23:55 every Saturday)

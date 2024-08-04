@@ -5,7 +5,7 @@ const { UserActivityType, TrackingFilter } = require('../models/enum/user-activi
 const getTop10GoodDeeds = async (isShare = false) => {
   return db.GoodDeed.findAll({
     order: [['score', 'DESC']],
-    limit: 9,
+    limit: 10,
     where: { isShare },
     raw: true
   })
@@ -64,8 +64,8 @@ const appOverviewV2 = async (req, res) => {
     const currentUserInfo = { id: userId, shareRank: 0, individualRank: 0, shareGoodDeed: null, individualGoodDeed: null };
     const [usersCount, topIndividualUsers, topShareUsers, tasks, total_personal_good_deeds, total_share_good_deeds] = await Promise.all([
       db.User.count(),
-      await getTop10GoodDeeds(false),
-      await getTop10GoodDeeds(true),
+      getTop10GoodDeeds(false),
+      getTop10GoodDeeds(true),
       getTasksCount(userId),
       db.GoodDeed.sum('score', { where: { isShare: false } }),
       db.GoodDeed.sum('score', { where: { isShare: true } }),
@@ -675,9 +675,10 @@ async function activitiesScoreQuery(options) {
   return db.UserActivity.findAll({
     where: {
       type: {
-        [Op.notIn]: [
+        [Op.in]: [
           UserActivityType.AyahSharing,
-          UserActivityType.Search,
+          UserActivityType.QuranPledge,
+          UserActivityType.QuranReading
         ],
       },
       createdAt: {
@@ -686,9 +687,12 @@ async function activitiesScoreQuery(options) {
     },
     attributes: [
       'userId',
-      [db.Sequelize.fn('SUM', db.Sequelize.cast(db.Sequelize.col('value'), 'INTEGER')), 'totalValue']
+      [db.Sequelize.fn('SUM', db.Sequelize.cast(db.Sequelize.json('meta.good_deeds'), 'INTEGER')), 'totalValue']
     ],
     group: ['userId'],
+    having: db.Sequelize.where(db.Sequelize.fn('SUM', db.Sequelize.cast(db.Sequelize.json('meta.good_deeds'), 'INTEGER')), {
+      [Op.ne]: null
+    }),
     order: [['totalValue', 'DESC']],
     limit: options.limit ?? 5,
     offset: options.offset ?? 0,
