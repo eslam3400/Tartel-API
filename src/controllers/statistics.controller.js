@@ -27,7 +27,7 @@ const updateUserGoodDeedInfo = async (info, iteration = 0) => {
     info.individualGoodDeed = goodDeedsFilter.find(x => !x.isShare);
   } else {
     const index = goodDeeds.findIndex(x => x.userId == info.id);
-    if (index == -1) return getUserGoodDeedsRank(info, ++iteration);
+    if (index == -1) return updateUserGoodDeedInfo(info, ++iteration);
     if (goodDeeds[index].isShare) {
       info.shareRank = (iteration * 1000) + index;
       info.shareGoodDeed = goodDeeds[index];
@@ -71,6 +71,9 @@ const appOverviewV2 = async (req, res) => {
       db.GoodDeed.sum('score', { where: { isShare: true } }),
       updateUserGoodDeedInfo(currentUserInfo)
     ]);
+    if (currentUserInfo.shareRank == 0) {
+      currentUserInfo.shareRank = usersCount;
+    }
     const individualGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topIndividualUsers.map(x => x.userId) }, isShare: false }, raw: true });
     const shareGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topShareUsers.map(x => x.userId) }, isShare: true }, raw: true });
     const finalTopIndividualUsers = [];
@@ -733,6 +736,9 @@ async function getActivitiesScore(req, res) {
         if (newActivities.length == 0) break;
         offset += limit;
       }
+    }
+    if (currentUserInfo.rank == 0) {
+      currentUserInfo.rank = await db.User.count();
     }
     res.json({ activities, currentUserInfo });
   } catch (error) {

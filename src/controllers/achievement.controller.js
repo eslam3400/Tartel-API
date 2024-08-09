@@ -3,10 +3,7 @@ const db = require("../data");
 async function create(req, res) {
   try {
     const { name } = req.body;
-    const { buffer } = req.file;
-
-    await db.Achievement.create({ name, image: buffer });
-
+    await db.Achievement.create({ name });
     return res.status(200).json({ message: "achievement created!" });
   } catch (error) {
     console.log(error);
@@ -46,7 +43,7 @@ async function getAll(req, res) {
 async function getMine(req, res) {
   try {
     const { userId } = req;
-    const userAchievements = await db.UserAchievement.findAll({ where: { userId } });
+    const userAchievements = await db.UserAchievement.findAll({ where: { userId }, include: db.Achievement });
     return res.status(200).json(userAchievements);
   } catch (error) {
     console.log(error);
