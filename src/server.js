@@ -17,13 +17,12 @@ require('./cron/index.cron');
 
 const app = express();
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
-app.use("/api/statistics", statisticsRoutes);
+app.use("/api/statistics", authMiddleware, statisticsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/user-activities', userActivityRoutes);
 app.use('/api/achievements', authMiddleware, achievementRoutes);

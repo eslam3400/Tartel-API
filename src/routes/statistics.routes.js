@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const statisticsController = require('../controllers/statistics.controller');
-const authMiddleware = require('../middlewares/auth.middleware')
 
-router.get('/', authMiddleware, statisticsController.appOverview);
-router.get('/v2', authMiddleware, statisticsController.appOverviewV2);
-router.get('/activities', authMiddleware, statisticsController.getActivitiesScore);
-router.get('/user', authMiddleware, statisticsController.userOverview);
-router.get('/user/activities-tracking', authMiddleware, statisticsController.activitiesTracking);
-router.get('/user/pages-tracking', authMiddleware, statisticsController.pagesTracking);
-router.get('/user/pledges-tracking', authMiddleware, statisticsController.pledgesTracking);
-router.get('/user/progress', authMiddleware, statisticsController.progress);
-router.get('/user/activities', authMiddleware, statisticsController.getActivities);
+router.get('/', statisticsController.appOverview);
+router.get('/v2', statisticsController.appOverviewV2);
+router.get('/activities', statisticsController.getActivitiesScore);
+router.get('/user', statisticsController.userOverview);
+router.get('/user/activities-tracking', statisticsController.activitiesTracking);
+router.get('/user/pages-tracking', statisticsController.pagesTracking);
+router.get('/user/pledges-tracking', statisticsController.pledgesTracking);
+router.get('/user/progress', statisticsController.progress);
+router.get('/user/activities', statisticsController.getActivities);
+router.get('/user/owned-users', statisticsController.getUserOwnedUsers);
 
 module.exports = router;

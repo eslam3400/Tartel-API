@@ -750,6 +750,22 @@ async function getActivitiesScore(req, res) {
   }
 }
 
+async function getUserOwnedUsers(req, res) {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ message: 'User id is required' });
+    const user = await db.User.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const ownedUsers = await db.User.findAll({ where: { userId }, include: db.GoodDeed });
+    return res.status(200).json({ user, ownedUsers });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 module.exports = {
   appOverview,
   userOverview,
@@ -761,5 +777,6 @@ module.exports = {
   appOverviewV2,
   getActivitiesScore,
   activitiesScoreQuery,
-  getStartDateOfCurrentWeek
+  getStartDateOfCurrentWeek,
+  getUserOwnedUsers
 };
