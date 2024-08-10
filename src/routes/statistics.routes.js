@@ -5,6 +5,7 @@ const statisticsController = require('../controllers/statistics.controller');
 router.get('/', statisticsController.appOverview);
 router.get('/v2', statisticsController.appOverviewV2);
 router.get('/activities', statisticsController.getActivitiesScore);
+router.get('/recently-joined', statisticsController.recentlyJoinedUsers);
 router.get('/user', statisticsController.userOverview);
 router.get('/user/activities-tracking', statisticsController.activitiesTracking);
 router.get('/user/pages-tracking', statisticsController.pagesTracking);

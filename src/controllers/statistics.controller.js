@@ -766,6 +766,29 @@ async function getUserOwnedUsers(req, res) {
   }
 }
 
+async function recentlyJoinedUsers(req, res) {
+  try {
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+    const users = await db.User.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: twentyFourHoursAgo
+        }
+      },
+      order: [['createdAt', 'DESC']],
+      limit: 1000,
+      include: db.GoodDeed
+    });
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
 module.exports = {
   appOverview,
   userOverview,
@@ -778,5 +801,6 @@ module.exports = {
   getActivitiesScore,
   activitiesScoreQuery,
   getStartDateOfCurrentWeek,
-  getUserOwnedUsers
+  getUserOwnedUsers,
+  recentlyJoinedUsers
 };
