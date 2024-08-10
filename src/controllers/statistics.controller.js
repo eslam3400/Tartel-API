@@ -74,6 +74,9 @@ const appOverviewV2 = async (req, res) => {
     if (currentUserInfo.shareRank == 0) {
       currentUserInfo.shareRank = usersCount;
     }
+    if (currentUserInfo.individualRank == 0) {
+      currentUserInfo.individualRank = usersCount;
+    }
     const individualGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topIndividualUsers.map(x => x.userId) }, isShare: false }, raw: true });
     const shareGoodDeeds = await db.GoodDeed.findAll({ where: { userId: { [Op.in]: topShareUsers.map(x => x.userId) }, isShare: true }, raw: true });
     const finalTopIndividualUsers = [];
