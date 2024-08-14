@@ -32,9 +32,17 @@ async function status(req, res) {
 
 async function assignSupports(userId) {
   try {
+    const START_USER_ID = 35000;
     const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
     if (!supportTracker) return;
-    const availableUsers = await db.User.findAll({ where: { id: { [Op.ne]: userId }, userId: null }, limit: supportTracker.need });
+    const availableUsers = await db.User.findAll({
+      where: {
+        id: { [Op.and]: { [Op.ne]: userId, [Op.gt]: START_USER_ID } },
+        userId: null
+      },
+      order: db.sequelize.random(),
+      limit: supportTracker.need
+    });
     if (availableUsers.length === 0) return;
     for (const user of availableUsers) {
       user.userId = userId;
