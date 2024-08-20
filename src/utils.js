@@ -1,4 +1,6 @@
 const OneSignal = require('@onesignal/node-onesignal');
+const path = require('path');
+const fs = require('fs');
 
 function getLastFourMonths() {
   const currentDate = new Date();
@@ -36,4 +38,15 @@ function sendNotification({ title, message, userToken }) {
   });
 }
 
-module.exports = { getLastFourMonths, getArabicMonthName, sendNotification }
+function logMessage(message) {
+  const logFilePath = path.join(__dirname, '../', 'logs.txt');
+  const logEntry = `${new Date().toISOString()} - ${JSON.stringify(message)}\n`;
+  console.log(message);
+  fs.appendFile(logFilePath, logEntry, (err) => {
+    if (err) {
+      console.error('Failed to write log to file:', err);
+    }
+  });
+}
+
+module.exports = { getLastFourMonths, getArabicMonthName, sendNotification, logMessage };

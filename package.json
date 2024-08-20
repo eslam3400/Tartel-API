@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "tunnel": "lt --port 80 --subdomain tartil"
   },
   "keywords": [],
   "author": "",

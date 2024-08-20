@@ -1,0 +1,70 @@
+2024-08-20T12:17:01.699Z - "---------------------------------------"
+2024-08-20T12:17:01.716Z - {"Old user good deeds":1}
+2024-08-20T12:17:01.720Z - {"User gained good deeds":"9"}
+2024-08-20T12:17:01.759Z - "---------------------------------------"
+2024-08-20T12:17:01.760Z - {"User gained good deeds":"9"}
+2024-08-20T12:17:01.760Z - {"Old user good deeds":1}
+2024-08-20T12:17:01.831Z - {"New user good deeds":10}
+2024-08-20T12:17:01.868Z - {"New user good deeds":10}
+2024-08-20T12:17:02.064Z - {"currentUserId":3715,"id":2200,"Parent good deeds before":"6333"}
+2024-08-20T12:17:02.089Z - "---------------------------------------"
+2024-08-20T12:17:02.090Z - {"User gained good deeds":"10"}
+2024-08-20T12:17:02.089Z - {"Old user good deeds":1}
+2024-08-20T12:17:02.094Z - {"currentUserId":3715,"id":2200,"Parent good deeds before":"6333"}
+2024-08-20T12:17:02.156Z - {"Parent user good deeds after":6334}
+2024-08-20T12:17:02.173Z - {"New user good deeds":11}
+2024-08-20T12:17:02.179Z - {"Parent user good deeds after":6334}
+2024-08-20T12:17:02.242Z - {"type":"support","currentUserId":3715,"id":2200,"gained":1,"Parent support good deeds before":6337}
+2024-08-20T12:17:02.264Z - {"type":"support","currentUserId":3715,"id":2200,"gained":1,"Parent support good deeds before":6337}
+2024-08-20T12:17:02.335Z - {"Parent user support good deeds after":6338}
+2024-08-20T12:17:02.357Z - {"Parent user support good deeds after":6338}
+2024-08-20T12:17:02.371Z - {"currentUserId":3715,"id":2200,"Parent good deeds before":"6334"}
+2024-08-20T12:17:02.469Z - {"Parent user good deeds after":6335}
+2024-08-20T12:17:02.551Z - {"currentUserId":2200,"id":2211,"Parent good deeds before":"325416380"}
+2024-08-20T12:17:02.560Z - {"type":"support","currentUserId":3715,"id":2200,"gained":1,"Parent support good deeds before":6338}
+2024-08-20T12:17:02.562Z - {"currentUserId":2200,"id":2211,"Parent good deeds before":"325416380"}
+2024-08-20T12:17:02.635Z - {"Parent user good deeds after":325416381}
+2024-08-20T12:17:02.647Z - {"Parent user good deeds after":325416381}
+2024-08-20T12:17:02.648Z - {"Parent user support good deeds after":6339}
+2024-08-20T12:17:02.862Z - {"currentUserId":2211,"id":1657,"Parent good deeds before":"332275786"}
+2024-08-20T12:17:02.892Z - {"currentUserId":2200,"id":2211,"Parent good deeds before":"325416381"}
+2024-08-20T12:17:02.896Z - {"currentUserId":2211,"id":1657,"Parent good deeds before":"332275786"}
+2024-08-20T12:17:02.985Z - {"Parent user good deeds after":332275787}
+2024-08-20T12:17:02.989Z - {"Parent user good deeds after":332275787}
+2024-08-20T12:17:02.992Z - {"Parent user good deeds after":325416382}
+2024-08-20T12:17:03.190Z - {"currentUserId":1657,"id":2524,"Parent good deeds before":"337523290"}
+2024-08-20T12:17:03.196Z - {"currentUserId":1657,"id":2524,"Parent good deeds before":"337523290"}
+2024-08-20T12:17:03.223Z - {"currentUserId":2211,"id":1657,"Parent good deeds before":"332275787"}
+2024-08-20T12:17:03.278Z - {"Parent user good deeds after":337523291}
+2024-08-20T12:17:03.283Z - {"Parent user good deeds after":337523291}
+2024-08-20T12:17:03.307Z - {"Parent user good deeds after":332275788}
+2024-08-20T12:17:03.498Z - {"currentUserId":1657,"id":2524,"Parent good deeds before":"337523291"}
+2024-08-20T12:17:03.581Z - {"Parent user good deeds after":337523292}
+2024-08-20T12:17:41.067Z - {"Old user good deeds":1}
+2024-08-20T12:17:41.067Z - "---------------------------------------"
+2024-08-20T12:17:41.068Z - {"User gained good deeds":"3"}
+2024-08-20T12:17:41.162Z - {"New user good deeds":4}
+2024-08-20T12:17:41.348Z - {"currentUserId":1516,"id":2200,"Parent good deeds before":"6335"}
+2024-08-20T12:17:41.437Z - {"Parent user good deeds after":6336}
+2024-08-20T12:17:41.517Z - {"type":"support","currentUserId":1516,"id":2200,"gained":1,"Parent support good deeds before":6339}
+2024-08-20T12:17:41.603Z - {"Parent user support good deeds after":6340}
+2024-08-20T12:17:41.719Z - "---------------------------------------"
+2024-08-20T12:17:41.719Z - {"Old user good deeds":1}
+2024-08-20T12:17:41.720Z - {"User gained good deeds":"4"}
+2024-08-20T12:17:41.795Z - {"currentUserId":2200,"id":2211,"Parent good deeds before":"325416382"}
+2024-08-20T12:17:41.816Z - {"New user good deeds":5}
+2024-08-20T12:17:41.881Z - {"Parent user good deeds after":325416383}
+2024-08-20T12:17:42.005Z - {"currentUserId":1516,"id":2200,"Parent good deeds before":"6336"}
+2024-08-20T12:17:42.076Z - {"currentUserId":2211,"id":1657,"Parent good deeds before":"332275788"}
+2024-08-20T12:17:42.102Z - {"Parent user good deeds after":6337}
+2024-08-20T12:17:42.175Z - {"Parent user good deeds after":332275789}
+2024-08-20T12:17:42.185Z - {"type":"support","currentUserId":1516,"id":2200,"gained":1,"Parent support good deeds before":6340}
+2024-08-20T12:17:42.270Z - {"Parent user support good deeds after":6341}
+2024-08-20T12:17:42.358Z - {"currentUserId":1657,"id":2524,"Parent good deeds before":"337523292"}
+2024-08-20T12:17:42.442Z - {"Parent user good deeds after":337523293}
+2024-08-20T12:17:42.453Z - {"currentUserId":2200,"id":2211,"Parent good deeds before":"325416383"}
+2024-08-20T12:17:42.537Z - {"Parent user good deeds after":325416384}
+2024-08-20T12:17:42.720Z - {"currentUserId":2211,"id":1657,"Parent good deeds before":"332275789"}
+2024-08-20T12:17:42.807Z - {"Parent user good deeds after":332275790}
+2024-08-20T12:17:43.024Z - {"currentUserId":1657,"id":2524,"Parent good deeds before":"337523293"}
+2024-08-20T12:17:43.108Z - {"Parent user good deeds after":337523294}
