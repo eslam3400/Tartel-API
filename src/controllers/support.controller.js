@@ -1,5 +1,5 @@
 const db = require("../data");
-const { Op, where } = require("sequelize")
+const { Op } = require("sequelize")
 
 async function create(req, res) {
   try {
@@ -34,7 +34,7 @@ async function status(req, res) {
 
 async function assignSupports(userId) {
   try {
-    const START_USER_ID = 35000;
+    const START_USER_ID = 50000;
     const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
     if (!supportTracker) return;
     const availableUsers = await db.User.findAll({

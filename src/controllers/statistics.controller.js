@@ -25,7 +25,8 @@ const updateUserGoodDeedInfo = async (info, iteration = 0) => {
     info.individualRank = (iteration * 1000) + goodDeeds.findIndex(x => x.userId == info.id && !x.isShare);
     info.shareGoodDeed = goodDeedsFilter.find(x => x.isShare);
     info.individualGoodDeed = goodDeedsFilter.find(x => !x.isShare);
-  } else {
+  }
+  else {
     const index = goodDeeds.findIndex(x => x.userId == info.id);
     if (index == -1) return updateUserGoodDeedInfo(info, ++iteration);
     if (goodDeeds[index].isShare) {
@@ -35,6 +36,9 @@ const updateUserGoodDeedInfo = async (info, iteration = 0) => {
       info.individualRank = (iteration * 1000) + index;
       info.individualGoodDeed = goodDeeds[index];
     }
+  }
+  if (!info.shareGoodDeed || !info.individualGoodDeed) {
+    return updateUserGoodDeedInfo(info, ++iteration);
   }
 }
 

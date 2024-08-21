@@ -15,11 +15,11 @@ async function continueAssignUsers() {
       const available = supportTrackers.filter(supportTracker => !finished.includes(supportTracker.id));
       const element = getRandomElement(available);
       await assignSupports(element.userId);
-      finished.push(supportTracker.id);
+      finished.push(element.id);
     }
   } catch (error) {
     console.log("support cron error`", error);
   }
 }
 
-cron.schedule('0 0 * * *', continueAssignUsers);
+cron.schedule('0 * * * *', continueAssignUsers);
