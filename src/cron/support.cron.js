@@ -1,4 +1,6 @@
 const cron = require('node-cron');
+const db = require('../data');
+const { Op } = require('sequelize');
 const { assignSupports } = require('../controllers/support.controller');
 
 function getRandomElement(arr) {
