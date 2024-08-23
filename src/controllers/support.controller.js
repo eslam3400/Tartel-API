@@ -5,11 +5,13 @@ async function create(req, res) {
   try {
     const { userId } = req;
     const { paid, need } = req.body;
-    if (paid < 0 || !need || need <= 0) {
+    if (paid < 0 || !need || need < 0) {
       return res.status(400).json({ message: "paid and need are required and be more than 0" });
     }
-    const isUserHadFreeSupport = await db.Support.findOne({ where: { userId, paid: 0 } });
-    if (isUserHadFreeSupport) return res.status(400).json({ message: "user already take the free support" });
+    if (paid == 0) {
+      const isUserHadFreeSupport = await db.Support.findOne({ where: { userId, paid: 0 } });
+      if (isUserHadFreeSupport) return res.status(400).json({ message: "user already take the free support" });
+    }
     await db.Support.create({ userId, paid, need });
     await assignSupports(userId);
     return res.status(200).json({ message: "support recorded!" });
