@@ -55,12 +55,11 @@ async function create(req, res) {
     if (meta?.good_deeds) {
       const userGoodDeed = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
       const user = await db.User.findOne({ where: { id: userId } });
-      // const before = userGoodDeed?.score;
-      // logMessage("---------------------------------------");
       if (userGoodDeed) {
         userGoodDeed.score = +userGoodDeed.score + meta.good_deeds;
-        if (userGoodDeed.score - userGoodDeed.lastNotification >= 10000) {
+        if (userGoodDeed.score - userGoodDeed.lastNotification >= userGoodDeed.notificationCap) {
           userGoodDeed.lastNotification = userGoodDeed.score;
+          userGoodDeed.notificationCap = userGoodDeed.notificationCap * 10;
           sendNotification({
             title: "الأعمال الصالحة",
             message: `لقد حصلت على ${userGoodDeed.score} من الأعمال الصالحة`,
@@ -72,13 +71,6 @@ async function create(req, res) {
       else {
         await db.GoodDeed.create({ userId, score: meta.good_deeds, isShare: false });
       }
-      // logMessage({
-      //   currentUser: userId,
-      //   parentUser: user.userId,
-      //   before,
-      //   gained: meta.good_deeds,
-      //   after: userGoodDeed?.score,
-      // });
       await giveGoodDeedsToParentTree(meta.good_deeds, user);
     }
     return res.status(200).json({ message: "activity recorded!" });
@@ -93,25 +85,24 @@ async function giveGoodDeedsToParentTree(goodDeeds, currentUser) {
   const parentUser = await db.User.findOne({ where: { id: currentUser.userId } });
   if (!parentUser) return;
   const parentUserGoodDeeds = await db.GoodDeed.findOne({ where: { userId: parentUser.id, isShare: true } });
-  // const before = parentUserGoodDeeds?.score;
   if (parentUserGoodDeeds) {
     parentUserGoodDeeds.score = +parentUserGoodDeeds.score + goodDeeds;
+    if (parentUserGoodDeeds.score - parentUserGoodDeeds.lastNotification >= parentUserGoodDeeds.notificationCap) {
+      parentUserGoodDeeds.lastNotification = parentUserGoodDeeds.score;
+      parentUserGoodDeeds.notificationCap = parentUserGoodDeeds.notificationCap * 10;
+      sendNotification({
+        title: "الأعمال الصالحة",
+        message: `لقد حصلت على ${parentUserGoodDeeds.score} من الأعمال الصالحة`,
+        userToken: parentUser.device_token,
+      }).catch(x => x);
+    }
     await parentUserGoodDeeds.save();
   }
   else {
     await db.GoodDeed.create({ userId: parentUser.id, score: goodDeeds, isShare: true });
   }
-  // logMessage({
-  //   type: "share good deeds",
-  //   child: currentUser.id,
-  //   parentUser: parentUser.id,
-  //   before,
-  //   gained: goodDeeds,
-  //   after: parentUserGoodDeeds?.score,
-  // });
   if (currentUser.isSupport) {
     const supportGoodDeed = await db.SupportGoodDeed.findOne({ where: { userId: parentUser.id } });
-    // const before = supportGoodDeed?.score;
     if (supportGoodDeed) {
       supportGoodDeed.score = +supportGoodDeed.score + goodDeeds;
       await supportGoodDeed.save();
@@ -119,14 +110,6 @@ async function giveGoodDeedsToParentTree(goodDeeds, currentUser) {
     else {
       await db.SupportGoodDeed.create({ userId: parentUser.id, score: goodDeeds });
     }
-    // logMessage({
-    //   type: "support",
-    //   child: currentUser.id,
-    //   parent: parentUser.id,
-    //   before,
-    //   gained: goodDeeds,
-    //   after: supportGoodDeed.score,
-    // });
   }
   return await giveGoodDeedsToParentTree(goodDeeds, parentUser);
 }

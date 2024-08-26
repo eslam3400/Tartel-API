@@ -12,6 +12,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BIGINT,
       defaultValue: 0,
     },
+    notificationCap: {
+      type: Sequelize.BIGINT,
+      defaultValue: 1000,
+    }
   });
 
   return GoodDeed;
