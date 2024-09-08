@@ -1,3 +1,7 @@
+pg_dump -U postgres -h tartil-db.cd5yvcxbvqtz.eu-north-1.rds.amazonaws.com -p 5432 -d tartil -F c -f D:\work\gaber\tartel\backend\tartil.dump
+
+pg_restore -U postgres -d tartil D:\work\gaber\tartel\backend\tartil.dump
+
 aws
 ssh -i "./tarteel server.pem" ec2-user@ec2-16-171-107-217.eu-north-1.compute.amazonaws.com
 
