@@ -39,9 +39,25 @@ async function assignSupports(userId) {
     const START_USER_ID = 50000;
     const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
     if (!supportTracker) return;
+    const currentUser = await db.User.findOne({ where: { id: userId } });
+    const currentUserParentsAndChildIds = await db.User.findAll({
+      where: {
+        [Op.or]: [
+          { userId: currentUser.id },
+          { id: currentUser.userId }
+        ]
+      },
+      attributes: ['id']
+    }).map(user => user.id);
+    currentUserParentsAndChildIds.push(userId);
     const availableUsers = await db.User.findAll({
       where: {
-        id: { [Op.and]: { [Op.ne]: userId, [Op.gt]: START_USER_ID } },
+        id: {
+          [Op.and]: [
+            { [Op.gt]: START_USER_ID },
+            { [Op.notIn]: currentUserParentsAndChildIds }
+          ]
+        },
         userId: null
       },
       order: db.sequelize.random(),
