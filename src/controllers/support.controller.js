@@ -48,7 +48,7 @@ async function assignSupports(userId) {
         ]
       },
       attributes: ['id']
-    }).map(user => user.id);
+    })?.map(user => user.id);
     currentUserParentsAndChildIds.push(userId);
     const availableUsers = await db.User.findAll({
       where: {
@@ -74,7 +74,6 @@ async function assignSupports(userId) {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: 'Server error' });
   }
 }
 

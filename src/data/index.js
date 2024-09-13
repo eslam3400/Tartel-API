@@ -13,10 +13,10 @@ const sequelize = new Sequelize(
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      },
+      // ssl: {
+      //   require: true,
+      //   rejectUnauthorized: false
+      // },
     }
   }
 );
@@ -35,6 +35,7 @@ db.Achievement = require('../models/achievement')(sequelize, Sequelize);
 db.UserAchievement = require('../models/user-achievement')(sequelize, Sequelize);
 db.Support = require('../models/support')(sequelize, Sequelize);
 db.SupportGoodDeed = require('../models/support-good-deed')(sequelize, Sequelize);
+db.Option = require('../models/option')(sequelize, Sequelize);
 
 // relations
 db.User.belongsTo(db.User);

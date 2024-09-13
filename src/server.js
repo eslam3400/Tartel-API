@@ -10,6 +10,7 @@ const tasksRoutes = require('./routes/tasks.routes');
 const userActivityRoutes = require('./routes/user-activity.routes');
 const achievementRoutes = require('./routes/achievement.routes');
 const supportRoutes = require('./routes/support.routes');
+const optionRoutes = require('./routes/option.routes');
 const readFileAsync = util.promisify(fs.readFile);
 const multer = require('multer');
 const authMiddleware = require('./middlewares/auth.middleware');
@@ -27,6 +28,7 @@ app.use('/api/tasks', tasksRoutes);
 app.use('/api/user-activities', userActivityRoutes);
 app.use('/api/achievements', authMiddleware, achievementRoutes);
 app.use('/api/supports', supportRoutes);
+app.use('/api/options', optionRoutes);
 
 app.get("/api/ayat", async (req, res) => {
   try {
