@@ -4,6 +4,7 @@ const admin = require('firebase-admin');
 const path = require('path');
 
 const serviceAccount = require('../../firestore-key.json');
+const backupsFolder = path.join(__dirname, '../../db-backups');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -13,8 +14,8 @@ admin.initializeApp({
 const bucket = admin.storage().bucket();
 
 async function uploadBackup() {
-  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.sql`;
-  const filePath = `~/db-backups/${backupFileName}`;
+  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
+  const filePath = `${backupsFolder}/${backupFileName}`;
 
   await bucket.upload(filePath, {
     destination: backupFileName,
@@ -25,8 +26,8 @@ async function uploadBackup() {
 }
 
 function createBackup() {
-  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.sql`;
-  const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ~/db-backups/${backupFileName}`;
+  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
+  const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupsFolder}/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error creating backup: ${error.message}`);
