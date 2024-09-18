@@ -2,30 +2,55 @@ const { exec } = require('child_process');
 const cron = require('node-cron');
 const admin = require('firebase-admin');
 const path = require('path');
+const fs = require('fs');
+const { Storage } = require('@google-cloud/storage');
 
 const serviceAccount = require('../../firestore-key.json');
 const backupsFolder = path.join(__dirname, '../../db-backups');
+const bucketName = 'db.taahad';
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'db.taahad',
+  storageBucket: bucketName,
 });
 
 const bucket = admin.storage().bucket();
+const storage = new Storage({ keyFilename: '../../firestore-key.json' });
+
+async function ensureBucketExists() {
+  const [exists] = await storage.bucket(bucketName).exists();
+  if (!exists) {
+    await storage.createBucket(bucketName);
+    console.log(`Bucket ${bucketName} created.`);
+  } else {
+    console.log(`Bucket ${bucketName} already exists.`);
+  }
+}
+
+async function ensureBackupsFolderExists() {
+  if (!fs.existsSync(backupsFolder)) {
+    fs.mkdirSync(backupsFolder);
+  }
+}
 
 async function uploadBackup() {
   const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const filePath = `${backupsFolder}/${backupFileName}`;
-
-  await bucket.upload(filePath, {
-    destination: backupFileName,
-    metadata: {
-      contentType: 'application/sql',
-    },
-  });
+  try {
+    await ensureBucketExists();
+    await bucket.upload(filePath, {
+      destination: backupFileName,
+      metadata: {
+        contentType: 'application/sql',
+      },
+    });
+  } catch (error) {
+    console.error('Error uploading backup:', error);
+  }
 }
 
 function createBackup() {
+  ensureBackupsFolderExists();
   const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupsFolder}/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
