@@ -10,13 +10,13 @@
 			"name": "Auth",
 			"item": [
 				{
-					"name": "Register",
+					"name": "Auth",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"phone\": \"01206242025\",\r\n    \"firebaseId\": \"10\"\r\n}",
+							"raw": "{\r\n    \"phone\": \"01206242025\",\r\n    \"firebaseId\": \"firebaseId 5\",\r\n    \"is_new_auth\": true,\r\n    \"device_id\": \"3400\",\r\n    \"email\": \"eslam34000@gmail.com\"\r\n    // \"device_token\": \"teststa fjskgasdjk\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,40 +24,37 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/auth/register",
+							"raw": "{{local}}/auth",
 							"host": [
-								"{{host}}"
+								"{{local}}"
 							],
 							"path": [
-								"auth",
-								"register"
+								"auth"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Login",
+					"name": "Invitation",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"phone\": \"01206242025\",\r\n    \"firebaseId\": \"10\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{host}}/auth/login",
+							"raw": "{{local}}/auth/invitation-by/:token",
 							"host": [
-								"{{host}}"
+								"{{local}}"
 							],
 							"path": [
 								"auth",
-								"login"
+								"invitation-by",
+								":token"
+							],
+							"variable": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjo2MCwiaWF0IjoxNzEzNTU2NzcyfQ.CgBU5lXJNO2PYQLP_btsXWjptb5kpqpWxbE7Mdco70A"
+								}
 							]
 						}
 					},
@@ -74,12 +71,123 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/statistics",
+							"raw": "{{server}}/statistics",
 							"host": [
-								"{{host}}"
+								"{{server}}"
 							],
 							"path": [
 								"statistics"
+							],
+							"query": [
+								{
+									"key": "is_share",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Overview V2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/v2",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"v2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Overview",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/statistics/user",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"statistics",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activities Board",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "duration",
+									"value": "year",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Owned Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/owned-users?userId=9844",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"owned-users"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "9844"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recently Joined Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/recently-joined",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"recently-joined"
 							]
 						}
 					},
@@ -91,18 +199,505 @@
 			"name": "Tasks",
 			"item": [
 				{
-					"name": "Daily Tasks Remain",
+					"name": "Tasks Template",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/tasks/remain",
+							"raw": "{{local}}/tasks/chapter-tasks",
 							"host": [
-								"{{host}}"
+								"{{local}}"
 							],
 							"path": [
 								"tasks",
-								"remain"
+								"chapter-tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"page\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/tasks",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Activities",
+			"item": [
+				{
+					"name": "Continuously",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"continuously\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/user-activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quran Reading",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"quran-reading\",\r\n    \"value\": 60, //seconds\r\n    \"meta\": {\r\n        \"page\": 10,\r\n        \"from\": {\r\n            \"surah_name\": \"Surah Name\",\r\n            \"surah\":  10,\r\n            \"ayah\": 10\r\n        },\r\n        \"to\": {\r\n            \"surah_name\": \"Surah Name 2\",\r\n            \"surah\": 6,\r\n            \"ayah\": 16\r\n        },\r\n        \"good_deeds\": 30\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/user-activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quran Completion",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"quran-completion\",\r\n    \"value\": \"1\" //page number\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/user-activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quran Pledge",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"quran-pledge\",\r\n    \"value\": 145, //seconds\r\n    \"meta\":{\r\n        \"good_deeds\": 23\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/user-activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Telawa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"telawa\",\r\n    \"value\": 146, //time in seconds\r\n    \"meta\": {\r\n        \"good_deeds\": 1000,\r\n        \"from\": {\r\n            \"surah\": 5,\r\n            \"ayah\": 10\r\n        },\r\n        \"to\": {\r\n            \"surah\": 5,\r\n            \"ayah\": 10\r\n        },\r\n        \"mistakes\": 87,\r\n        \"record_link\": \"http://test.test/audio.mp3\" // here put the path to the record on local to be palyed later\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/user-activities",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"search\",\r\n    \"value\": \"search key\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/user-activities",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"user-activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/activities?filter=quran-reading",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "quran-reading"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activities Tracking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/activities-tracking",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"activities-tracking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pages Tracking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/pages-tracking",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"pages-tracking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pledges Tracking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/pledges-tracking",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"pledges-tracking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Progress",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/statistics/user/progress?duration=month",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"statistics",
+								"user",
+								"progress"
+							],
+							"query": [
+								{
+									"key": "duration",
+									"value": "month"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Achievements",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Top user of the year",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/Eslam/Downloads/One-Piece-3c05a95-e1679912095666.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/achievements",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"achievements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Achievements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{hostinger}}/achievements",
+							"host": [
+								"{{hostinger}}"
+							],
+							"path": [
+								"achievements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Achievements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/achievements/mine",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"achievements",
+								"mine"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Support",
+			"item": [
+				{
+					"name": "Create Support",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"paid\": 0,\r\n    \"need\": 50\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/supports",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"supports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/supports/status",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"supports",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Options",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"key\": \"Test\",\r\n    \"value\": \"Teest\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/options",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"options"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/options/:key",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"options",
+								":key"
+							],
+							"variable": [
+								{
+									"key": "key",
+									"value": "Test"
+								}
 							]
 						}
 					},
@@ -122,6 +717,64 @@
 					],
 					"path": [
 						"ayat"
+					],
+					"query": [
+						{
+							"key": "translation",
+							"value": "131",
+							"disabled": true
+						},
+						{
+							"key": "type",
+							"value": "2",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Page Ayat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/page-ayat",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"page-ayat"
+					],
+					"query": [
+						{
+							"key": "translation",
+							"value": "131",
+							"disabled": true
+						},
+						{
+							"key": "type",
+							"value": "2",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Page Ayat 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/page-ayat2",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"page-ayat2"
 					],
 					"query": [
 						{
@@ -261,9 +914,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/telawat-ayat/:id?from_ayah=1&to_ayah=7&from_surah=1&to_surah=1",
+					"raw": "{{local}}/telawat-ayat/:id?from_ayah=4&to_ayah=4&from_surah=1&to_surah=2",
 					"host": [
-						"{{server}}"
+						"{{local}}"
 					],
 					"path": [
 						"telawat-ayat",
@@ -272,18 +925,14 @@
 					"query": [
 						{
 							"key": "from_ayah",
-							"value": "1"
+							"value": "4"
 						},
 						{
 							"key": "to_ayah",
-							"value": "7"
+							"value": "4"
 						},
 						{
 							"key": "from_surah",
-							"value": "1"
-						},
-						{
-							"key": "to_surah",
 							"value": "1"
 						},
 						{
@@ -300,19 +949,63 @@
 							"key": "juz",
 							"value": "12",
 							"disabled": true
+						},
+						{
+							"key": "to_surah",
+							"value": "2"
 						}
 					],
 					"variable": [
 						{
 							"key": "id",
-							"value": "1"
+							"value": "6"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ml",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "audio",
+							"type": "file",
+							"src": "/C:/Users/cf/Documents/Sound Recordings/Recording.m4a"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://ml.taahad.com/process_audio",
+					"protocol": "https",
+					"host": [
+						"ml",
+						"taahad",
+						"com"
+					],
+					"path": [
+						"process_audio"
 					]
 				}
 			},
 			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjozODcxLCJpYXQiOjE3MjM2NDYxNDF9.Nii4nTomKs4_ijnizZRr2z-PI3gkjy0rRX5pAVlVF0o",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -336,12 +1029,12 @@
 	"variable": [
 		{
 			"key": "local",
-			"value": "http://localhost:80/api",
+			"value": "http://localhost:3000/api",
 			"type": "string"
 		},
 		{
 			"key": "server",
-			"value": "http://ec2-51-20-96-110.eu-north-1.compute.amazonaws.com/api",
+			"value": "https://api.taahad.com/api",
 			"type": "string"
 		}
 	]
