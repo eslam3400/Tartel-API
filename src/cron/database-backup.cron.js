@@ -5,8 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const { Storage } = require('@google-cloud/storage');
 
-const serviceAccount = require('../../firestore-key.json');
 const backupsFolder = path.join(__dirname, '../../db-backups');
+const serviceAccount = require('../../firestore-key.json');
 const bucketName = 'db.taahad';
 
 admin.initializeApp({
@@ -15,7 +15,7 @@ admin.initializeApp({
 });
 
 const bucket = admin.storage().bucket();
-const storage = new Storage({ keyFilename: '../../firestore-key.json' });
+const storage = new Storage({ keyFile: serviceAccount });
 
 async function ensureBucketExists() {
   const [exists] = await storage.bucket(bucketName).exists();
