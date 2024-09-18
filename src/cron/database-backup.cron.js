@@ -1,36 +1,32 @@
 const { exec } = require('child_process');
 const cron = require('node-cron');
-// const admin = require('firebase-admin');
-const fs = require('fs');
+const admin = require('firebase-admin');
 const path = require('path');
 
-// // Initialize Firebase Admin SDK
-// const serviceAccount = require('./path/to/your/serviceAccountKey.json');
+const serviceAccount = require('../../firestore-key.json');
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   storageBucket: 'your-project-id.appspot.com'
-// });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: 'db.taahad',
+});
 
-// const bucket = admin.storage().bucket();
+const bucket = admin.storage().bucket();
 
-// async function uploadBackup() {
-//   const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.sql`;
-//   const filePath = path.join(__dirname, backupFileName);
+async function uploadBackup() {
+  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.sql`;
+  const filePath = `~/db-backups/${backupFileName}`;
 
-//   await bucket.upload(filePath, {
-//     destination: backupFileName,
-//     metadata: {
-//       contentType: 'application/sql',
-//     },
-//   });
-
-//   console.log(`Backup uploaded to Firestore: ${backupFileName}`);
-// }
+  await bucket.upload(filePath, {
+    destination: backupFileName,
+    metadata: {
+      contentType: 'application/sql',
+    },
+  });
+}
 
 function createBackup() {
   const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.sql`;
-  const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupFileName}`;
+  const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ~/db-backups/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error creating backup: ${error.message}`);
@@ -41,7 +37,9 @@ function createBackup() {
       return;
     }
     console.log(`Backup created: ${backupFileName}`);
-    // uploadBackup().catch(console.error);
+    uploadBackup()
+      .then(() => console.log('Backup uploaded to Firebase Storage'))
+      .catch(console.error);
   });
 }
 

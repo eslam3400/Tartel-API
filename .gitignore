@@ -1,3 +1,4 @@
 node_modules
 ./logs.txt
 ./backups
+firestore-key.json
