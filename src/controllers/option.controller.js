@@ -28,7 +28,7 @@ async function getByKey(req, res) {
   try {
     const { key } = req.params;
     if (!key) return res.status(400).json({ message: "Key is required" });
-    const option = await db.Option.findOne({ where: key });
+    const option = await db.Option.findOne({ where: { key } });
     if (!option) return res.status(404).json({ message: "Option not found" });
     return res.status(200).json(option);
   } catch (error) {
