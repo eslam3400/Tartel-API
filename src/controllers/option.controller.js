@@ -3,6 +3,9 @@ const db = require("../data");
 async function create(req, res) {
   try {
     const { key, value } = req.body;
+    if (!key || !value) return res.status(400).json({ message: "Key and value are required" });
+    const existingOption = await db.Option.findOne({ where: { key } });
+    if (existingOption) return res.status(400).json({ message: "Option already exists" });
     const option = await db.Option.create({ key, value });
     return res.status(201).json(option);
   } catch (error) {
