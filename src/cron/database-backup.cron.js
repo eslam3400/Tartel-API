@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const serviceAccount = require('../../firestore-key.json');
 const backupsFolder = path.join(__dirname, '../../db-backups');
+const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -21,7 +22,6 @@ async function ensureBackupsFolderExists() {
 }
 
 async function uploadBackup() {
-  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const filePath = `${backupsFolder}/${backupFileName}`;
 
   await bucket.upload(filePath, {
@@ -30,11 +30,13 @@ async function uploadBackup() {
       contentType: 'application/sql',
     },
   });
+
+  // Delete the local backup file after uploading it to Firebase Storage
+  fs.unlinkSync(`${backupsFolder}/${backupFileName}`);
 }
 
 function createBackup() {
   ensureBackupsFolderExists();
-  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupsFolder}/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
     if (error) {
@@ -52,9 +54,5 @@ function createBackup() {
   });
 }
 
-createBackup();
-
 // Schedule the backup to run every day at 1 AM
-// cron.schedule('0 1 * * *', createBackup);
-
-// console.log('Backup script scheduled to run every day at 1 AM');
+cron.schedule('0 1 * * *', createBackup);
