@@ -3,31 +3,16 @@ const cron = require('node-cron');
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
-const { Storage } = require('@google-cloud/storage');
 
+const serviceAccount = require('../../firestore-key.json');
 const backupsFolder = path.join(__dirname, '../../db-backups');
-const serviceAccountPath = path.join(__dirname, '../../firestore-key.json');
-const bucketName = 'db.taahad';
-
-process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountPath),
-  storageBucket: bucketName,
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: 'gs://quran-6b2e3.appspot.com',
 });
 
 const bucket = admin.storage().bucket();
-const storage = new Storage();
-
-async function ensureBucketExists() {
-  const [exists] = await storage.bucket(bucketName).exists();
-  if (!exists) {
-    await storage.createBucket(bucketName);
-    console.log(`Bucket ${bucketName} created.`);
-  } else {
-    console.log(`Bucket ${bucketName} already exists.`);
-  }
-}
 
 async function ensureBackupsFolderExists() {
   if (!fs.existsSync(backupsFolder)) {
@@ -38,19 +23,13 @@ async function ensureBackupsFolderExists() {
 async function uploadBackup() {
   const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const filePath = `${backupsFolder}/${backupFileName}`;
-  try {
-    await ensureBucketExists();
-    console.log('Uploading backup to Firebase Storage...');
-    await bucket.upload(filePath, {
-      destination: backupFileName,
-      metadata: {
-        contentType: 'application/sql',
-      },
-    });
-    console.log(`Backup uploaded successfully: ${backupFileName}`);
-  } catch (error) {
-    console.error('Error uploading backup:', error);
-  }
+
+  await bucket.upload(filePath, {
+    destination: backupFileName,
+    metadata: {
+      contentType: 'application/sql',
+    },
+  });
 }
 
 function createBackup() {
