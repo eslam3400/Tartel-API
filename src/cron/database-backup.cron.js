@@ -6,16 +6,18 @@ const fs = require('fs');
 const { Storage } = require('@google-cloud/storage');
 
 const backupsFolder = path.join(__dirname, '../../db-backups');
-const serviceAccount = require('../../firestore-key.json');
+const serviceAccountPath = path.join(__dirname, '../../firestore-key.json');
 const bucketName = 'db.taahad';
 
+process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
+
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccountPath),
   storageBucket: bucketName,
 });
 
 const bucket = admin.storage().bucket();
-const storage = new Storage({ keyFile: serviceAccount });
+const storage = new Storage();
 
 async function ensureBucketExists() {
   const [exists] = await storage.bucket(bucketName).exists();
@@ -38,12 +40,14 @@ async function uploadBackup() {
   const filePath = `${backupsFolder}/${backupFileName}`;
   try {
     await ensureBucketExists();
+    console.log('Uploading backup to Firebase Storage...');
     await bucket.upload(filePath, {
       destination: backupFileName,
       metadata: {
         contentType: 'application/sql',
       },
     });
+    console.log(`Backup uploaded successfully: ${backupFileName}`);
   } catch (error) {
     console.error('Error uploading backup:', error);
   }
