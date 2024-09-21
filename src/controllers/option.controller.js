@@ -39,11 +39,11 @@ async function getByKey(req, res) {
 
 async function update(req, res) {
   try {
-    const { id } = req.params;
-    const { key, value } = req.body;
-    const option = await db.Option.findByPk(id);
+    const { key } = req.params;
+    const { value } = req.body;
+    if (!key || !value) return res.status(400).json({ message: "Key and value are required" });
+    const option = await db.Option.findOne({ where: { key } });
     if (!option) return res.status(404).json({ message: "Option not found" });
-    option.key = key;
     option.value = value;
     await option.save();
     return res.status(200).json(option);
