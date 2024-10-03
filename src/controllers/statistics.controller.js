@@ -5,7 +5,7 @@ const { UserActivityType, TrackingFilter } = require('../models/enum/user-activi
 const getTop10GoodDeeds = async (isShare = false) => {
   return db.GoodDeed.findAll({
     order: [['score', 'DESC']],
-    limit: 30,
+    limit: 10,
     where: { isShare },
     raw: true
   })
