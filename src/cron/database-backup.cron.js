@@ -6,7 +6,6 @@ const fs = require('fs');
 
 const serviceAccount = require('../../firestore-key.json');
 const backupsFolder = path.join(__dirname, '../../db-backups');
-const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -21,7 +20,7 @@ async function ensureBackupsFolderExists() {
   }
 }
 
-async function uploadBackup() {
+async function uploadBackup(backupFileName) {
   const filePath = `${backupsFolder}/${backupFileName}`;
 
   await bucket.upload(filePath, {
@@ -35,8 +34,23 @@ async function uploadBackup() {
   fs.unlinkSync(`${backupsFolder}/${backupFileName}`);
 }
 
+async function deleteOldBackups() {
+  const [files] = await bucket.getFiles();
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  for (const file of files) {
+    const [metadata] = await file.getMetadata();
+    const fileDate = new Date(metadata.timeCreated);
+    if (fileDate < oneWeekAgo) {
+      await file.delete();
+    }
+  }
+}
+
 function createBackup() {
   ensureBackupsFolderExists();
+  const backupFileName = `backup_${new Date().toISOString().split('T')[0]}.dump`;
   const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupsFolder}/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
     if (error) {
@@ -48,8 +62,9 @@ function createBackup() {
       return;
     }
     console.log(`Backup created: ${backupFileName}`);
-    uploadBackup()
-      .then(() => console.log('Backup uploaded to Firebase Storage'))
+    uploadBackup(backupFileName)
+      .then(() => deleteOldBackups())
+      .then(() => console.log('Backup uploaded and old backups deleted'))
       .catch(console.error);
   });
 }
