@@ -37,7 +37,7 @@ async function uploadBackup() {
 
 function createBackup() {
   ensureBackupsFolderExists();
-  const command = `pg_dump -U postgres -h localhost -p 5432 tartil > ${backupsFolder}/${backupFileName}`;
+  const command = `pg_dump -U postgres -h localhost -p 5432 -d tartil -F c -f ${backupsFolder}/${backupFileName}`;
   exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error creating backup: ${error.message}`);

@@ -36,7 +36,7 @@ async function status(req, res) {
 
 async function assignSupports(userId) {
   try {
-    const START_USER_ID = 50000;
+    const START_USER_ID = 30000;
     const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
     if (!supportTracker) return;
     const currentUser = await db.User.findOne({ where: { id: userId } });
