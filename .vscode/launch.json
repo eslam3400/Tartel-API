@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -11,13 +8,12 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\src\\server.js"
+            "program": "${workspaceFolder}/src/server.js"
         },
         {
             "type": "node",
             "request": "attach",
             "name": "Attach to Process",
-            "processId": "${command:PickProcess}",
             "skipFiles": [
                 "<node_internals>/**"
             ]
