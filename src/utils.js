@@ -41,7 +41,6 @@ function sendNotification({ title, message, userToken }) {
 function logMessage(message) {
   const logFilePath = path.join(__dirname, '../', 'logs.txt');
   const logEntry = `${new Date().toISOString()} - ${JSON.stringify(message)}\n`;
-  console.log(message);
   fs.appendFile(logFilePath, logEntry, (err) => {
     if (err) {
       console.error('Failed to write log to file:', err);

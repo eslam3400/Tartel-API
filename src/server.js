@@ -85,7 +85,6 @@ app.get("/api/ayat", async (req, res) => {
     }
     res.json({ translation_id: translation, data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 });
@@ -147,7 +146,6 @@ app.get("/api/page-ayat", async (req, res) => {
     }
     res.json({ translation_id: translation, data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 });
@@ -235,7 +233,6 @@ app.get("/api/page-ayat2", async (req, res) => {
     }
     res.json({ translation_id: translation, data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 });
@@ -269,7 +266,6 @@ app.get("/api/translations", async (req, res) => {
     }
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -329,7 +325,6 @@ app.get("/api/chapters", async (req, res) => {
     data.hizbs.forEach((item, index) => item.number = index + 1)
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -340,7 +335,6 @@ app.get("/api/tafseers", async (req, res) => {
     const data = response.data
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -369,7 +363,6 @@ app.get("/api/tafseers/:id", async (req, res) => {
     }
     res.json({ tafseer_id: id, data })
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -380,7 +373,6 @@ app.get("/api/telawat", async (req, res) => {
     const data = response.data.recitations
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -392,7 +384,6 @@ app.get("/api/telawat/:id", async (req, res) => {
     const data = response.data.audio_files
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
@@ -453,7 +444,6 @@ app.get("/api/telawat-ayat/:id", async (req, res) => {
     }
     res.json({ data });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message })
   }
 })
