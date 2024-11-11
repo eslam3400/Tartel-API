@@ -37,7 +37,10 @@ async function status(req, res) {
 async function assignSupports(userId) {
   try {
     const START_USER_ID = 30000;
-    const supportTracker = await db.Support.findOne({ where: { userId, need: { [Op.gt]: 0 } } });
+    const supportTracker = await db.Support.findOne({
+      where: { userId, need: { [Op.gt]: 0 } },
+      order: [['need', 'DESC']]
+    });
     if (!supportTracker) return;
     const currentUser = await db.User.findOne({ where: { id: userId } });
     const currentUserParentsAndChildIds = (await db.User.findAll({
@@ -51,6 +54,7 @@ async function assignSupports(userId) {
     }))?.map(user => user.id);
     currentUserParentsAndChildIds.push(userId);
     const availableUsers = await db.User.findAll({
+      include: db.GoodDeed,
       where: {
         id: {
           [Op.and]: [
@@ -63,7 +67,12 @@ async function assignSupports(userId) {
       order: db.sequelize.random(),
       limit: supportTracker.need
     });
-    if (availableUsers.length === 0) return;
+    const filteredAvailableUsers = availableUsers.filter(user => {
+      const basicGoodDeed = user['good-deeds'].find(goodDeed => goodDeed.isShare === false);
+      if (!basicGoodDeed) return false;
+      return basicGoodDeed.score >= 100;
+    });
+    if (filteredAvailableUsers.length === 0) return;
     for (const user of availableUsers) {
       user.userId = userId;
       user.isSupport = true;
@@ -71,6 +80,24 @@ async function assignSupports(userId) {
       supportTracker.need -= 1;
       supportTracker.gained += 1;
       await supportTracker.save();
+    }
+    // giving the old support score to the owner
+    const allUsersScore = filteredAvailableUsers.reduce((acc, user) => acc + +user['good-deeds'][0].score, 0);
+    const supportGoodDeed = await db.SupportGoodDeed.findOne({ where: { userId } });
+    if (supportGoodDeed) {
+      supportGoodDeed.score = allUsersScore;
+      await supportGoodDeed.save();
+    }
+    else {
+      await db.SupportGoodDeed.create({ userId, score: allUsersScore });
+    }
+    const goodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
+    if (goodDeeds) {
+      goodDeeds.score = +goodDeeds.score + allUsersScore;
+      await goodDeeds.save();
+    }
+    else {
+      await db.GoodDeed.create({ userId, score: allUsersScore, isShare: false });
     }
   } catch (error) {
     console.log(error);
