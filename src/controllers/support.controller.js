@@ -85,7 +85,7 @@ async function assignSupports(userId) {
     const allUsersScore = filteredAvailableUsers.reduce((acc, user) => acc + +user['good-deeds'][0].score, 0);
     const supportGoodDeed = await db.SupportGoodDeed.findOne({ where: { userId } });
     if (supportGoodDeed) {
-      supportGoodDeed.score = allUsersScore;
+      supportGoodDeed.score = +supportGoodDeed.score + allUsersScore;
       await supportGoodDeed.save();
     }
     else {
