@@ -53,6 +53,11 @@ async function assignSupports(userId) {
       attributes: ['id']
     }))?.map(user => user.id);
     currentUserParentsAndChildIds.push(userId);
+    let totalSupport = supportTracker.need + supportTracker.gained;
+    let supportToAssign = Math.ceil(totalSupport * 0.3);
+    if (supportToAssign > supportTracker.need) {
+      supportToAssign = supportTracker.need;
+    }
     const availableUsers = await db.User.findAll({
       include: db.GoodDeed,
       where: {
@@ -65,7 +70,7 @@ async function assignSupports(userId) {
         userId: null
       },
       order: db.sequelize.random(),
-      limit: supportTracker.need
+      limit: supportTracker.supportToAssign
     });
     const filteredAvailableUsers = availableUsers.filter(user => {
       const basicGoodDeed = user['good-deeds'].find(goodDeed => goodDeed.isShare === false);
