@@ -41,7 +41,7 @@ async function assignSupports(userId) {
       where: { userId, need: { [Op.gt]: 0 } },
       order: [['need', 'DESC']]
     });
-    if (!supportTracker) return;
+    if (!supportTracker || supportTracker.need <= 0) return;
     const currentUser = await db.User.findOne({ where: { id: userId } });
     const currentUserParentsAndChildIds = (await db.User.findAll({
       where: {
