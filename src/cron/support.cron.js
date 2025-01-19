@@ -11,12 +11,16 @@ function getRandomElement(arr) {
 async function continueAssignUsers() {
   try {
     const supportTrackers = await db.Support.findAll({ where: { need: { [Op.gt]: 0 } } });
-    if (supportTrackers.length === 0) return;
     const finished = [];
+    if (supportTrackers.length === 0) return;
+    const users = await db.User.findAll({
+      include: db.GoodDeed,
+      order: db.sequelize.random(),
+    });
     while (finished.length < supportTrackers.length) {
       const available = supportTrackers.filter(supportTracker => !finished.includes(supportTracker.id));
       const element = getRandomElement(available);
-      await assignSupports(element.userId);
+      await assignSupports(element.userId, users);
       finished.push(element.id);
     }
   } catch (error) {

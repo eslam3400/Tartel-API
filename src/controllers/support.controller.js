@@ -13,7 +13,11 @@ async function create(req, res) {
       if (isUserHadFreeSupport) return res.status(400).json({ message: "user already take the free support" });
     }
     await db.Support.create({ userId, paid, need });
-    await assignSupports(userId);
+    const users = await db.User.findAll({
+      include: db.GoodDeed,
+      order: db.sequelize.random(),
+    });
+    await assignSupports(userId, users);
     return res.status(200).json({ message: "support recorded!" });
   } catch (error) {
     console.log(error);
@@ -34,79 +38,72 @@ async function status(req, res) {
   }
 }
 
-async function assignSupports(userId) {
+async function assignSupports(userId, users) {
   try {
-    const START_USER_ID = 30000;
+    const asyncTasks = [];
     const supportTracker = await db.Support.findOne({
       where: { userId, need: { [Op.gt]: 0 } },
       order: [['need', 'DESC']]
     });
     if (!supportTracker || supportTracker.need <= 0) return;
-    const currentUser = await db.User.findOne({ where: { id: userId } });
-    const currentUserParentsAndChildIds = (await db.User.findAll({
-      where: {
-        [Op.or]: [
-          { userId: currentUser.id },
-          { id: currentUser.userId }
-        ]
-      },
-      attributes: ['id']
-    }))?.map(user => user.id);
-    currentUserParentsAndChildIds.push(userId);
     let totalSupport = supportTracker.need + supportTracker.gained;
     let supportToAssign = Math.ceil(totalSupport * 0.3);
     if (supportToAssign > supportTracker.need) {
       supportToAssign = supportTracker.need;
     }
-    const availableUsers = await db.User.findAll({
-      include: db.GoodDeed,
-      where: {
-        id: {
-          [Op.and]: [
-            { [Op.gt]: START_USER_ID },
-            { [Op.notIn]: currentUserParentsAndChildIds }
-          ]
-        },
-        userId: null
-      },
-      order: db.sequelize.random(),
-      limit: supportTracker.supportToAssign
-    });
-    const filteredAvailableUsers = availableUsers.filter(user => {
-      const basicGoodDeed = user['good-deeds'].find(goodDeed => goodDeed.isShare === false);
-      if (!basicGoodDeed) return false;
-      return basicGoodDeed.score >= 100;
-    });
-    if (filteredAvailableUsers.length === 0) return;
+
+    const userParentChain = getUserParentChain(userId, users);
+    const availableUsers = users.filter(user => {
+      return (
+        !userParentChain.includes(user.id) &&
+        user.userId == null &&
+        user['good-deeds'].find(goodDeed => goodDeed.isShare === false)?.score >= 100
+      );
+    }).slice(0, supportToAssign);
+
+    if (availableUsers.length === 0) return;
     for (const user of availableUsers) {
       user.userId = userId;
       user.isSupport = true;
-      await user.save();
+      asyncTasks.push(user.save());
       supportTracker.need -= 1;
       supportTracker.gained += 1;
-      await supportTracker.save();
     }
-    // giving the old support score to the owner
-    const allUsersScore = filteredAvailableUsers.reduce((acc, user) => acc + +user['good-deeds'][0].score, 0);
+    asyncTasks.push(supportTracker.save());
+    const allUsersScore = availableUsers.reduce((acc, user) => acc + +(user['good-deeds'].find(x => !x.isShare)?.score ?? 0), 0);
     const supportGoodDeed = await db.SupportGoodDeed.findOne({ where: { userId } });
     if (supportGoodDeed) {
       supportGoodDeed.score = +supportGoodDeed.score + allUsersScore;
-      await supportGoodDeed.save();
+      asyncTasks.push(supportGoodDeed.save());
     }
     else {
-      await db.SupportGoodDeed.create({ userId, score: allUsersScore });
+      asyncTasks.push(db.SupportGoodDeed.create({ userId, score: allUsersScore }));
     }
     const goodDeeds = await db.GoodDeed.findOne({ where: { userId, isShare: false } });
     if (goodDeeds) {
       goodDeeds.score = +goodDeeds.score + allUsersScore;
-      await goodDeeds.save();
+      asyncTasks.push(goodDeeds.save());
     }
     else {
-      await db.GoodDeed.create({ userId, score: allUsersScore, isShare: false });
+      asyncTasks.push(db.GoodDeed.create({ userId, score: allUsersScore, isShare: false }));
     }
+    await Promise.all(asyncTasks);
   } catch (error) {
     console.log(error);
   }
 }
 
-module.exports = { create, assignSupports, status };
+function getUserParentChain(userId, users, chain = []) {
+  if (!userId || userId < 1) return chain;
+  const user = users.find(user => user.id === userId);
+  if (!user) return chain;
+  chain.push(user.id);
+  return getUserParentChain(user.userId, users, chain);
+}
+
+module.exports = {
+  create,
+  assignSupports,
+  status,
+  getUserParentChain
+};
