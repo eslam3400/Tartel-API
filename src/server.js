@@ -11,13 +11,12 @@ const userActivityRoutes = require('./routes/user-activity.routes');
 const achievementRoutes = require('./routes/achievement.routes');
 const supportRoutes = require('./routes/support.routes');
 const optionRoutes = require('./routes/option.routes');
+const booksRoutes = require('./routes/books.routes');
 const readFileAsync = util.promisify(fs.readFile);
-const multer = require('multer');
 const authMiddleware = require('./middlewares/auth.middleware');
 require('./cron/index.cron');
 
 const app = express();
-const storage = multer.memoryStorage();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,6 +28,7 @@ app.use('/api/user-activities', userActivityRoutes);
 app.use('/api/achievements', authMiddleware, achievementRoutes);
 app.use('/api/supports', supportRoutes);
 app.use('/api/options', optionRoutes);
+app.use('/api/books', booksRoutes);
 
 app.get("/api/ayat", async (req, res) => {
   try {
@@ -94,7 +94,14 @@ app.get("/api/page-ayat", async (req, res) => {
     let { translation, type } = req.query;
     translation = translation ?? 131;
     const data = []
-    const typeName = type == null || type == 1 ? "uthmani" : "indopak";
+    let typeName;
+    if (type == null || type == 1) {
+      typeName = "uthmani";
+    } else if (type == 2) {
+      typeName = "uthmani_tajweed";
+    } else {
+      typeName = "indopak";
+    }
     const [response, translationResponse, quran, translationsResponse] = await Promise.all([
       axios.get(`https://api.quran.com/api/v4/quran/verses/${typeName}`),
       axios.get(`https://api.quran.com/api/v4/quran/translations/${translation}`),
@@ -338,6 +345,16 @@ app.get("/api/tafseers", async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+app.get("/api/quran-json", async (req, res) => {
+  try {
+    const quran = await readFileAsync('quran.json', 'utf8');
+    const quranData = JSON.parse(quran);
+    res.json({ data: quranData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get("/api/tafseers/:id", async (req, res) => {
   try {
