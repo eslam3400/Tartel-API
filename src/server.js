@@ -35,7 +35,7 @@ app.get("/api/ayat", async (req, res) => {
   try {
     let { translation, type } = req.query;
     translation = translation ?? 85;
-    if (translation === 131) translation = 85;
+    if (translation == 131) translation = 85;
     const data = []
     const typeName = type == null || type == 1 ? "uthmani" : "indopak";
     const [response, translationResponse, quran, translationsResponse] = await Promise.all([
@@ -95,7 +95,7 @@ app.get("/api/page-ayat", async (req, res) => {
   try {
     let { translation, type } = req.query;
     translation = translation ?? 85;
-    if (translation === 131) translation = 85;
+    if (translation == 131) translation = 85;
     const data = []
     let typeName;
     if (type == null || type == 1) {
@@ -164,7 +164,7 @@ app.get("/api/page-ayat2", async (req, res) => {
   try {
     let { translation, type } = req.query;
     translation = translation ?? 85;
-    if (translation === 131) translation = 85;
+    if (translation == 131) translation = 85;
     const data = []
     const typeName = type == null || type == 1 ? "uthmani" : "indopak";
     const [response, translationResponse, quran, translationsResponse] = await Promise.all([
