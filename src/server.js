@@ -365,7 +365,10 @@ app.get("/api/tafseers/:id", async (req, res) => {
     const { id } = req.params;
     const requests = [];
     for (let i = 1; i <= 114; i++) {
-      requests.push(axios.get(`http://api.quran-tafseer.com/tafseer/${id}/${i}/1/1000`))
+      requests.push(axios.get(`http://api.quran-tafseer.com/tafseer/${id}/${i}/1/1000`, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      }))
     }
     const quran = await readFileAsync('quran.json', 'utf8');
     const quranData = JSON.parse(quran);
