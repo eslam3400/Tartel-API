@@ -366,25 +366,27 @@ app.get("/api/tafseers/:id", async (req, res) => {
     const requests = [];
     for (let i = 1; i <= 114; i++) {
       requests.push(axios.get(`http://api.quran-tafseer.com/tafseer/${id}/${i}/1/1000`, {
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxContentLength: -1,
+        maxBodyLength: -1
       }))
     }
     const quran = await readFileAsync('quran.json', 'utf8');
     const quranData = JSON.parse(quran);
-    const responses = await Promise.all(requests);
+    const results = await Promise.allSettled(requests);
     const data = [];
-    let counter = 1;
-    for (const response of responses) {
-      const ayat = quranData.filter(x => x.surah == counter);
-      counter++;
-      data.push(...response.data.map(x => ({
-        ...x,
-        sura: +x.ayah_url.split('/')[2],
-        sura_name: ayat[0].surrahname_no_diacratic,
-        ayah: ayat.find(y => y.ayah == x.ayah_number).ayah_text
-      })))
-    }
+    results.forEach((result, index) => {
+      const surahNumber = index + 1;
+      if (result.status === "fulfilled") {
+        const response = result.value;
+        const ayat = quranData.filter(x => x.surah == surahNumber);
+        data.push(...response.data.map(x => ({
+          ...x,
+          sura: +x.ayah_url.split('/')[2],
+          sura_name: ayat[0] ? ayat[0].surrahname_no_diacratic : "",
+          ayah: ayat.find(y => y.ayah == x.ayah_number)?.ayah_text || ""
+        })))
+      }
+    });
     res.json({ tafseer_id: id, data })
   } catch (error) {
     res.status(500).json({ error: error.message })
